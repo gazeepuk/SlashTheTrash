@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "STTCharacterBase.generated.h"
 
+class UBoxComponent;
 class UGameplayAbility;
 class UInputAction;
 class UInputMappingContext;
@@ -30,7 +32,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TObjectPtr<UCharacterDataAsset> CharacterDataAsset;
-
+	
 protected:
 
 	//~ACharacter interface
@@ -45,13 +47,16 @@ protected:
 	TObjectPtr<USTTAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY(Transient)
 	TObjectPtr<USTTCharacterAttributeSet> AttributeSet;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag AttackEvent;
 	
 	TSubclassOf<USTTComboAttackBase> LastComboAttackClass;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<USTTComboAttackBase>DefaultNormalAttackClass;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<USTTComboAttackBase>DefaultHardAttackClass;
-
+	
 	UFUNCTION()
 	void OnAbilityCommited(UGameplayAbility* GameplayAbility);
 protected:

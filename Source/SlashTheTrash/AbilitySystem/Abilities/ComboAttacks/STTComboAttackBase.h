@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/Abilities/AttackAbilityBase.h"
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
 #include "STTComboAttackBase.generated.h"
 
@@ -22,7 +23,7 @@ struct FComboAttackStaticInfo
  * 
  */
 UCLASS()
-class SLASHTHETRASH_API USTTComboAttackBase : public USTTGameplayAbilityBase
+class SLASHTHETRASH_API USTTComboAttackBase : public UAttackAbilityBase
 {
 	GENERATED_BODY()
 public:

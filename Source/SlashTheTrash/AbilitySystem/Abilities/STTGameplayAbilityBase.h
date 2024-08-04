@@ -19,4 +19,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ASTTCharacterBase* GetSTTCharacterFromActorInfo() const;
+
 };

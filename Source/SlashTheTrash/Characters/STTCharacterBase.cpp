@@ -54,10 +54,9 @@ void ASTTCharacterBase::BeginPlay()
 
 void ASTTCharacterBase::OnAbilityCommited(UGameplayAbility* GameplayAbility)
 {
-	USTTComboAttackBase* ComboAttackAbility = Cast<USTTComboAttackBase>(GameplayAbility);
-	if(IsValid(ComboAttackAbility))
+	if(IsValid(GameplayAbility) && GameplayAbility->IsA(USTTComboAttackBase::StaticClass()))
 	{
-		LastComboAttackClass = ComboAttackAbility->StaticClass();
+		LastComboAttackClass = GameplayAbility->GetClass();
 	}
 }
 
