@@ -2,15 +2,19 @@
 
 #include "Characters/STTCharacterBase.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystem/STTAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
 #include "AbilitySystem/Abilities/ComboAttacks/STTComboAttackBase.h"
 #include "AbilitySystem/AttributeSet/STTCharacterAttributeSet.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "Data/CharacterDataAsset.h"
 #include "Data/CharacterAbilitiesDataAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 static TAutoConsoleVariable<int32> CVarShowDebugSTTCharacter(
 	TEXT("ShowDebugSTTCharacter"),
@@ -35,6 +39,39 @@ ASTTCharacterBase::ASTTCharacterBase()
 	AttributeSet = CreateDefaultSubobject<USTTCharacterAttributeSet>(TEXT("AttributeSet"));
 
 	AbilitySystemComponent->AbilityCommittedCallbacks.AddUObject(this, &ThisClass::OnAbilityCommited);
+
+	CameraBoomComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoomComponent->SetupAttachment(GetRootComponent());
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	CameraComponent->SetupAttachment(CameraBoomComponent, USpringArmComponent::SocketName);
+
+	CameraBoomComponent->bUsePawnControlRotation = true;
+	CameraComponent->bUsePawnControlRotation = false;
+
+	// Don't rotate when the controller rotates. Let that just affect the camera.
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	// Configure character movement
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
+
+	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
+	// instead of recompiling to adjust them
+	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->AirControl = 0.35f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+	
+}
+
+void ASTTCharacterBase::ResetLastComboAttackClass()
+{
+	LastComboAttackClass = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -85,6 +122,10 @@ void ASTTCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		{
 			EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
 		}
+		if(IsValid(JumpAction))
+		{
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::StartJumpInput);
+		}
 		
 	}
 }
@@ -125,6 +166,18 @@ void ASTTCharacterBase::Look(const FInputActionValue& Value)
 	}
 }
 
+void ASTTCharacterBase::StartJumpInput(const FInputActionValue& Value)
+{
+	FGameplayEventData Payload;
+	Payload.EventTag = JumpEventTag;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, Payload);
+}
+
+void ASTTCharacterBase::StopJumpInput(const FInputActionValue& Value)
+{
+}
+
 void ASTTCharacterBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -149,6 +202,16 @@ void ASTTCharacterBase::PostInitializeComponents()
 	}
 }
 
+void ASTTCharacterBase::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	if(AbilitySystemComponent)
+	{
+		AbilitySystemComponent->RemoveActiveEffectsWithTags(InAirTags);
+	}
+}
+
 void ASTTCharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -164,6 +227,14 @@ void ASTTCharacterBase::OnRep_PlayerState()
 UAbilitySystemComponent* ASTTCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent.Get();
+}
+
+void ASTTCharacterBase::GetDamage_Implementation(FGameplayEffectSpec& DamageEffect)
+{
+	if(IsValid(AbilitySystemComponent))
+	{
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(DamageEffect);
+	}
 }
 
 void ASTTCharacterBase::UseNormalAttack(const FInputActionValue& Value)

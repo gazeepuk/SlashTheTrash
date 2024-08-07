@@ -7,8 +7,11 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
 #include "InputActionValue.h"
+#include "Interfaces/DamageableInterface.h"
 #include "STTCharacterBase.generated.h"
 
+class UCameraComponent;
+class USpringArmComponent;
 class UBoxComponent;
 class UGameplayAbility;
 class UInputAction;
@@ -19,7 +22,7 @@ class USTTCharacterAttributeSet;
 class USTTAbilitySystemComponent;
 
 UCLASS()
-class SLASHTHETRASH_API ASTTCharacterBase : public ACharacter, public IAbilitySystemInterface
+class SLASHTHETRASH_API ASTTCharacterBase : public ACharacter, public IAbilitySystemInterface, public IDamageableInterface
 {
 	GENERATED_BODY()
 
@@ -29,10 +32,13 @@ public:
 
 	//~IAbilitySystemInterface interface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TObjectPtr<UCharacterDataAsset> CharacterDataAsset;
-	
+
+	UFUNCTION(BlueprintCallable)
+	void ResetLastComboAttackClass();
 protected:
 
 	//~ACharacter interface
@@ -41,6 +47,8 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void PostInitializeComponents() override;
+
+	virtual void Landed(const FHitResult& Hit) override;
 	
 	//~Ability System
 	UPROPERTY(EditDefaultsOnly)
@@ -48,8 +56,17 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<USTTCharacterAttributeSet> AttributeSet;
 
+	//~IDamageableInterface
+	virtual void GetDamage_Implementation(FGameplayEffectSpec& DamageEffect) override;
+	
+	//~Camera
+    UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USpringArmComponent> CameraBoomComponent;
 	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag AttackEvent;
+	TObjectPtr<UCameraComponent> CameraComponent;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag JumpEventTag;
 	
 	TSubclassOf<USTTComboAttackBase> LastComboAttackClass;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
@@ -74,7 +91,10 @@ protected:
 	void Move(const FInputActionValue& Value);
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-
+	/** Called for looking input */
+	void StartJumpInput(const FInputActionValue& Value);
+	/** Called for looking input */
+	void StopJumpInput(const FInputActionValue& Value);
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
@@ -91,4 +111,12 @@ private:
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
+	/** Jump Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> JumpAction;
+
+	//GameplayTags
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTagContainer InAirTags;
 };

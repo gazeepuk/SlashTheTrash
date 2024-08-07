@@ -20,4 +20,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ASTTCharacterBase* GetSTTCharacterFromActorInfo() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<AActor*> TraceDamageableActors();
 };
