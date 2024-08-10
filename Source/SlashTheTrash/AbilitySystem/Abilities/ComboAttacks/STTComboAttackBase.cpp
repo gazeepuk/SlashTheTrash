@@ -3,7 +3,11 @@
 
 #include "AbilitySystem/Abilities/ComboAttacks/STTComboAttackBase.h"
 
-#include "Characters/STTCharacterBase.h"
+USTTComboAttackBase::USTTComboAttackBase()
+{
+	bIsBlockingOtherAbilities = true;
+	bIsCancelable = true;
+}
 
 const FComboAttackStaticInfo& USTTComboAttackBase::GetComboAttackStaticInfo() const
 {
@@ -15,6 +19,6 @@ void USTTComboAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("USTTComboAttackBase slayed"));
 }

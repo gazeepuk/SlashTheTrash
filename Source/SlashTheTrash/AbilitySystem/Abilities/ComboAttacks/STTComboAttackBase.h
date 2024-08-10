@@ -27,6 +27,7 @@ class SLASHTHETRASH_API USTTComboAttackBase : public USTTAttackAbilityBase
 {
 	GENERATED_BODY()
 public:
+	USTTComboAttackBase();
 	const FComboAttackStaticInfo& GetComboAttackStaticInfo() const;
 protected:
 

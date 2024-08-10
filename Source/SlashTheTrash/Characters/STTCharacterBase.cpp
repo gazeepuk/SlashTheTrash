@@ -125,6 +125,7 @@ void ASTTCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		if(IsValid(JumpAction))
 		{
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::StartJumpInput);
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::StopJumpInput);
 		}
 		
 	}
@@ -168,21 +169,27 @@ void ASTTCharacterBase::Look(const FInputActionValue& Value)
 
 void ASTTCharacterBase::StartJumpInput(const FInputActionValue& Value)
 {
-	FGameplayEventData Payload;
-	Payload.EventTag = JumpEventTag;
+	if(IsValid(AbilitySystemComponent) && JumpEventTag.IsValid())
+	{
+		FGameplayEventData Payload;
+		Payload.Instigator = this;
+		Payload.EventTag = JumpEventTag;
 
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, Payload);
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, Payload);
+	}
 }
 
 void ASTTCharacterBase::StopJumpInput(const FInputActionValue& Value)
 {
+	StopJumping();
 }
 
-void ASTTCharacterBase::PostInitializeComponents()
+
+void ASTTCharacterBase::ApplyDefaultEffects() const
 {
-	Super::PostInitializeComponents();
-	if (AbilitySystemComponent && IsValid(CharacterDataAsset))
+	if (GetLocalRole() == ROLE_Authority && IsValid(AbilitySystemComponent) && IsValid(CharacterDataAsset))
 	{
+	
 		//Apply default effect
 		if(IsValid(CharacterDataAsset->DefaultGameplayEffect))
 		{
@@ -190,8 +197,14 @@ void ASTTCharacterBase::PostInitializeComponents()
 			FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(CharacterDataAsset->DefaultGameplayEffect,1,ContextHandle);
 			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 		}
+	}
+}
 
-		//Apply default abilities
+void ASTTCharacterBase::GiveDefaultAbilities() const
+{
+	if (HasAuthority() && IsValid(AbilitySystemComponent) && IsValid(CharacterDataAsset))
+	{
+		//Give default abilities
 		if (IsValid(CharacterDataAsset->CharacterAbilitiesDataAsset))
 		{
 			for (const TSubclassOf<USTTGameplayAbilityBase>& DefaultAbility : CharacterDataAsset->CharacterAbilitiesDataAsset->GetDefaultAbilities())
@@ -200,6 +213,14 @@ void ASTTCharacterBase::PostInitializeComponents()
 			}
 		}
 	}
+	
+}
+
+void ASTTCharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	
 }
 
 void ASTTCharacterBase::Landed(const FHitResult& Hit)
@@ -216,6 +237,8 @@ void ASTTCharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	AbilitySystemComponent->InitAbilityActorInfo(GetPlayerState(), this);
+	GiveDefaultAbilities();
+	ApplyDefaultEffects();
 }
 
 void ASTTCharacterBase::OnRep_PlayerState()

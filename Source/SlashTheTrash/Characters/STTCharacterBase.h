@@ -91,10 +91,10 @@ protected:
 	void Move(const FInputActionValue& Value);
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-	/** Called for looking input */
+	/** Called for jump input */
 	void StartJumpInput(const FInputActionValue& Value);
-	/** Called for looking input */
 	void StopJumpInput(const FInputActionValue& Value);
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
@@ -115,6 +115,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> JumpAction;
 
+	void GiveDefaultAbilities() const;
+	void ApplyDefaultEffects() const;
+
+	
 	//GameplayTags
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
