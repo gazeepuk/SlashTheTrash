@@ -53,24 +53,32 @@ void ASTTCharacterBase::ApplyDefaultAttributes()
 {
 	check(IsValid(GetAbilitySystemComponent()));
 	check(CharacterDataAsset);
-	check(CharacterDataAsset->DefaultGameplayEffect);
-	
-	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultGameplayEffect, 1, ContextHandle);
+	check(CharacterDataAsset->DefaultPrimaryAttributesEffect);
+	check(CharacterDataAsset->DefaultSecondaryAttributesEffect);
+
+	//Preparing default attributes effect
+	FGameplayEffectContextHandle PrimaryContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle PrimarySpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultPrimaryAttributesEffect, 1, PrimaryContextHandle);
 
 	UGameplayTagsManager& TagsManager = UGameplayTagsManager::Get();
 
 	//Setup for SetByCaller
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxHealth"), CharacterDataAsset->DefaultAttributes.MaxHealth);
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxUltimateEnergy"), CharacterDataAsset->DefaultAttributes.MaxUltimateEnergy);
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetAttack"), CharacterDataAsset->DefaultAttributes.Attack);
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetDefence"), CharacterDataAsset->DefaultAttributes.Defence);
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetCritRate"), CharacterDataAsset->DefaultAttributes.CritRate);
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetCritDmg"), CharacterDataAsset->DefaultAttributes.CritDmg);
-	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetEnergyRegen"), CharacterDataAsset->DefaultAttributes.EnergyRegen);
-		
-	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
-	
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxHealth"), CharacterDataAsset->DefaultAttributes.MaxHealth);
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxUltimateEnergy"), CharacterDataAsset->DefaultAttributes.MaxUltimateEnergy);
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetAttack"), CharacterDataAsset->DefaultAttributes.Attack);
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetDefence"), CharacterDataAsset->DefaultAttributes.Defence);
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetCritRate"), CharacterDataAsset->DefaultAttributes.CritRate);
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetCritDmg"), CharacterDataAsset->DefaultAttributes.CritDmg);
+	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetEnergyRegen"), CharacterDataAsset->DefaultAttributes.EnergyRegen);
+
+	//Applying default attributes effect
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*PrimarySpecHandle.Data.Get());
+
+	//Preparing secondary attributes effect
+	FGameplayEffectContextHandle SecondaryContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle SecondarySpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultSecondaryAttributesEffect, 1, SecondaryContextHandle);
+	//Applying secondary attributes effect
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SecondarySpecHandle.Data.Get());
 }
 
 

@@ -285,9 +285,9 @@ void ASTTPlayerCharacter::InitAbilitySystemComponent()
 
 	GetAbilitySystemComponent()->InitAbilityActorInfo(STTPlayerState, this);
 	ApplyDefaultAttributes();
-	ApplyDefaultAttributes();
 
-	GetAbilitySystemComponent()->AbilityCommittedCallbacks.AddUObject(this, &ASTTPlayerCharacter::OnAbilityCommited);
+	GetAbilitySystemComponent()->AbilityCommittedCallbacks.Remove(OnCommitAbilityHandle);
+	OnCommitAbilityHandle = GetAbilitySystemComponent()->AbilityCommittedCallbacks.AddUObject(this, &ASTTPlayerCharacter::OnAbilityCommited);
 }
 
 

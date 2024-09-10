@@ -44,7 +44,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TObjectPtr<UCharacterAnimationsDataAsset> CharacterAnimationsDataAsset;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	const TSubclassOf<UGameplayEffect> DefaultGameplayEffect;
+	const TSubclassOf<UGameplayEffect> DefaultPrimaryAttributesEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	const TSubclassOf<UGameplayEffect> DefaultSecondaryAttributesEffect;
 	UPROPERTY(EditDefaultsOnly)
 	FDefaultCharacterAttributes DefaultAttributes;
 };

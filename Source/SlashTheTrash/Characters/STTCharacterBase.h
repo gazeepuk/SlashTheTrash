@@ -53,9 +53,13 @@ public:
 	virtual void GetDamage_Implementation(FGameplayEffectSpec& DamageEffect) override;
 
 protected:
+	//Setup Default abilities and attributes
 	virtual void GiveDefaultAbilities() const;
 	UFUNCTION(BlueprintCallable)
 	void ApplyDefaultAttributes();
+
+	//AbilityCommit delegate handle 
+	FDelegateHandle OnCommitAbilityHandle;
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void InitAbilitySystemComponent() {}
