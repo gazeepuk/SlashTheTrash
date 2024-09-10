@@ -5,11 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
-#include "GameplayTagContainer.h"
-#include "InputActionValue.h"
 #include "Interfaces/DamageableInterface.h"
 #include "STTCharacterBase.generated.h"
 
+class UAttributeSet;
 class UCameraComponent;
 class USpringArmComponent;
 class UBoxComponent;
@@ -21,7 +20,7 @@ class UCharacterDataAsset;
 class USTTCharacterAttributeSet;
 class USTTAbilitySystemComponent;
 
-UCLASS()
+UCLASS(Abstract)
 class SLASHTHETRASH_API ASTTCharacterBase : public ACharacter, public IAbilitySystemInterface, public IDamageableInterface
 {
 	GENERATED_BODY()
@@ -32,95 +31,32 @@ public:
 
 	//~IAbilitySystemInterface interface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual UAttributeSet* GetAttributeSet() const;
 
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TObjectPtr<UCharacterDataAsset> CharacterDataAsset;
 
-	UFUNCTION(BlueprintCallable)
-	void ResetLastComboAttackClass();
 protected:
 
 	//~ACharacter interface
 	//Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void OnRep_PlayerState() override;
-	virtual void PostInitializeComponents() override;
-
-	virtual void Landed(const FHitResult& Hit) override;
 	
 	//~Ability System
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USTTAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY(Transient)
-	TObjectPtr<USTTCharacterAttributeSet> AttributeSet;
+	TObjectPtr<UAttributeSet> AttributeSet;
 
+public:
 	//~IDamageableInterface
 	virtual void GetDamage_Implementation(FGameplayEffectSpec& DamageEffect) override;
-	
-	//~Camera
-    UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USpringArmComponent> CameraBoomComponent;
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UCameraComponent> CameraComponent;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag JumpEventTag;
-	
-	TSubclassOf<USTTComboAttackBase> LastComboAttackClass;
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TSubclassOf<USTTComboAttackBase>DefaultNormalAttackClass;
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TSubclassOf<USTTComboAttackBase>DefaultHardAttackClass;
-	
-	UFUNCTION()
-	void OnAbilityCommited(UGameplayAbility* GameplayAbility);
+
 protected:
-	//~APawn interface
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	//Input Actions Attacks
+	virtual void GiveDefaultAbilities() const;
 	UFUNCTION(BlueprintCallable)
-	virtual void UseNormalAttack(const FInputActionValue& Value);
+	void ApplyDefaultAttributes();
+	
 	UFUNCTION(BlueprintCallable)
-	virtual void UseHardAttack(const FInputActionValue& Value);
-	
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-	/** Called for jump input */
-	void StartJumpInput(const FInputActionValue& Value);
-	void StopJumpInput(const FInputActionValue& Value);
-
-private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputMappingContext> DefaultMappingContext;
-
-	/** Normal Attack Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> NormalAttackInputAction;
-	/** Hard Attack Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> HardAttackInputAction;
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> MoveAction;
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> LookAction;
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> JumpAction;
-
-	void GiveDefaultAbilities() const;
-	void ApplyDefaultEffects() const;
-
-	
-	//GameplayTags
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTagContainer InAirTags;
+	virtual void InitAbilitySystemComponent() {}
 };

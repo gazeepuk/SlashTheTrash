@@ -3,7 +3,9 @@
 
 #include "Data/CharacterAbilitiesDataAsset.h"
 
-const TArray<TSubclassOf<USTTGameplayAbilityBase>>& UCharacterAbilitiesDataAsset::GetDefaultAbilities() const
+#include "Abilities/GameplayAbility.h"
+
+const TArray<TSubclassOf<UGameplayAbility>>& UCharacterAbilitiesDataAsset::GetDefaultAbilities() const
 {
 	return DefaultAbilities;
 }

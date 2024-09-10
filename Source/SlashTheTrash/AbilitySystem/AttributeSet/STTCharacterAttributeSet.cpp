@@ -20,7 +20,7 @@ void USTTCharacterAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, BattleEnergy, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, MaxUltimateEnergy, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, UltimateEnergy, COND_None, REPNOTIFY_Always);
-
+	
 }
 
 #pragma region OnRep_Notifies
@@ -79,6 +79,7 @@ void USTTCharacterAttributeSet::OnRep_UltimateEnergy(const FGameplayAttributeDat
 GAMEPLAYATTRIBUTE_REPNOTIFY(USTTCharacterAttributeSet, UltimateEnergy, OldUltimateEnergy);
 }
 
+
 void USTTCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
@@ -86,6 +87,26 @@ void USTTCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectM
 	if(Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0, GetMaxHealth()));
+	}
+	if(Data.EvaluatedData.Attribute == GetUltimateEnergyAttribute())
+	{
+		//Applying EnergyRegen bonus
+		
+		float EnergyValueToRestore = Data.EvaluatedData.Magnitude;
+		//Undo restoring energy
+		float CurrentUltimateEnergy = GetUltimateEnergy();
+		SetUltimateEnergy(FMath::Clamp(CurrentUltimateEnergy - EnergyValueToRestore, 0, GetMaxUltimateEnergy()));
+		CurrentUltimateEnergy = GetUltimateEnergy();
+		//Get EnergyRegen bonus
+		float EnergyRegenValue = FMath::Max(1, GetEnergyRegen());
+
+		//Apply bonus to restoring energy
+		EnergyValueToRestore *= EnergyRegenValue;
+
+		//Calculate final ultimate energy value 
+		float FinalUltimateEnergyValue = CurrentUltimateEnergy + EnergyValueToRestore;
+		FinalUltimateEnergyValue = FMath::Clamp(FinalUltimateEnergyValue, 0, GetMaxUltimateEnergy());
+		SetUltimateEnergy(FinalUltimateEnergyValue);
 	}
 }
 #pragma endregion

@@ -6,7 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "STTGameplayAbilityBase.generated.h"
 
-class ASTTCharacterBase;
+class ASTTPlayerCharacter;
+
 /**
  * 
  */
@@ -18,7 +19,7 @@ class SLASHTHETRASH_API USTTGameplayAbilityBase : public UGameplayAbility
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	ASTTCharacterBase* GetSTTCharacterFromActorInfo() const;
+	ASTTPlayerCharacter* GetSTTPlayerCharacterFromActorInfo() const;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	TArray<AActor*> TraceDamageableActors();

@@ -13,5 +13,7 @@ UCLASS()
 class SLASHTHETRASH_API USTTAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
-	
+
+public:
+	void GiveCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& Abilities);
 };

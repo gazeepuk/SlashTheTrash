@@ -2,51 +2,22 @@
 
 #include "Characters/STTCharacterBase.h"
 
-#include "AbilitySystemBlueprintLibrary.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
+#include "GameplayTagsManager.h"
 #include "AbilitySystem/STTAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
-#include "AbilitySystem/Abilities/ComboAttacks/STTComboAttackBase.h"
 #include "AbilitySystem/AttributeSet/STTCharacterAttributeSet.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/PlayerState.h"
 #include "Data/CharacterDataAsset.h"
 #include "Data/CharacterAbilitiesDataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 
-static TAutoConsoleVariable<int32> CVarShowDebugSTTCharacter(
-	TEXT("ShowDebugSTTCharacter"),
-	0,
-	TEXT("Show character debug")
-	TEXT(" 0: off/n")
-	TEXT(" 1: on/n"),
-	ECVF_Cheat
-);
+
+
 
 // Sets default values
 ASTTCharacterBase::ASTTCharacterBase()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
-	//Setup Ability System
-	AbilitySystemComponent = CreateDefaultSubobject<USTTAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-
-	AttributeSet = CreateDefaultSubobject<USTTCharacterAttributeSet>(TEXT("AttributeSet"));
-
-	AbilitySystemComponent->AbilityCommittedCallbacks.AddUObject(this, &ThisClass::OnAbilityCommited);
-
-	CameraBoomComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoomComponent->SetupAttachment(GetRootComponent());
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComponent->SetupAttachment(CameraBoomComponent, USpringArmComponent::SocketName);
-
-	CameraBoomComponent->bUsePawnControlRotation = true;
-	CameraComponent->bUsePawnControlRotation = false;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -69,287 +40,70 @@ ASTTCharacterBase::ASTTCharacterBase()
 	
 }
 
-void ASTTCharacterBase::ResetLastComboAttackClass()
-{
-	LastComboAttackClass = nullptr;
-}
 
 // Called when the game starts or when spawned
 void ASTTCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+}
+
+
+void ASTTCharacterBase::ApplyDefaultAttributes()
+{
+	check(IsValid(GetAbilitySystemComponent()));
+	check(CharacterDataAsset);
+	check(CharacterDataAsset->DefaultGameplayEffect);
 	
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-}
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultGameplayEffect, 1, ContextHandle);
 
-void ASTTCharacterBase::OnAbilityCommited(UGameplayAbility* GameplayAbility)
-{
-	if(IsValid(GameplayAbility) && GameplayAbility->IsA(USTTComboAttackBase::StaticClass()))
-	{
-		LastComboAttackClass = GameplayAbility->GetClass();
-	}
-}
+	UGameplayTagsManager& TagsManager = UGameplayTagsManager::Get();
 
-// Called to bind functionality to input
-void ASTTCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	//Bind InputActions
-	if(UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		//Bind Attacks
-		if(IsValid(NormalAttackInputAction))
-		{
-			EnhancedInputComponent->BindAction(NormalAttackInputAction, ETriggerEvent::Started, this, &ThisClass::UseNormalAttack);
-		}
-		if(IsValid(HardAttackInputAction))
-		{
-			EnhancedInputComponent->BindAction(HardAttackInputAction, ETriggerEvent::Started, this, &ThisClass::UseHardAttack);
-		}
-		if(IsValid(MoveAction))
-		{
-			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
-		}
-		if(IsValid(LookAction))
-		{
-			EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
-		}
-		if(IsValid(JumpAction))
-		{
-			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::StartJumpInput);
-			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::StopJumpInput);
-		}
+	//Setup for SetByCaller
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxHealth"), CharacterDataAsset->DefaultAttributes.MaxHealth);
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxUltimateEnergy"), CharacterDataAsset->DefaultAttributes.MaxUltimateEnergy);
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetAttack"), CharacterDataAsset->DefaultAttributes.Attack);
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetDefence"), CharacterDataAsset->DefaultAttributes.Defence);
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetCritRate"), CharacterDataAsset->DefaultAttributes.CritRate);
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetCritDmg"), CharacterDataAsset->DefaultAttributes.CritDmg);
+	SpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetEnergyRegen"), CharacterDataAsset->DefaultAttributes.EnergyRegen);
 		
-	}
-}
-
-void ASTTCharacterBase::Move(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
-	}
 }
 
-void ASTTCharacterBase::Look(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
-}
-
-void ASTTCharacterBase::StartJumpInput(const FInputActionValue& Value)
-{
-	if(IsValid(AbilitySystemComponent) && JumpEventTag.IsValid())
-	{
-		FGameplayEventData Payload;
-		Payload.Instigator = this;
-		Payload.EventTag = JumpEventTag;
-
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, Payload);
-	}
-}
-
-void ASTTCharacterBase::StopJumpInput(const FInputActionValue& Value)
-{
-	StopJumping();
-}
-
-
-void ASTTCharacterBase::ApplyDefaultEffects() const
-{
-	if (GetLocalRole() == ROLE_Authority && IsValid(AbilitySystemComponent) && IsValid(CharacterDataAsset))
-	{
-	
-		//Apply default effect
-		if(IsValid(CharacterDataAsset->DefaultGameplayEffect))
-		{
-			FGameplayEffectContextHandle ContextHandle = AbilitySystemComponent->MakeEffectContext();
-			FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(CharacterDataAsset->DefaultGameplayEffect,1,ContextHandle);
-			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-		}
-	}
-}
 
 void ASTTCharacterBase::GiveDefaultAbilities() const
 {
-	if (HasAuthority() && IsValid(AbilitySystemComponent) && IsValid(CharacterDataAsset))
+	USTTAbilitySystemComponent* STTAbilitySystemComponent = CastChecked<USTTAbilitySystemComponent>(GetAbilitySystemComponent(), ECastCheckedType::NullAllowed);
+	if(!HasAuthority() || !STTAbilitySystemComponent || !IsValid(CharacterDataAsset) || !IsValid(CharacterDataAsset->CharacterAbilitiesDataAsset))
 	{
-		//Give default abilities
-		if (IsValid(CharacterDataAsset->CharacterAbilitiesDataAsset))
-		{
-			for (const TSubclassOf<USTTGameplayAbilityBase>& DefaultAbility : CharacterDataAsset->CharacterAbilitiesDataAsset->GetDefaultAbilities())
-			{
-				AbilitySystemComponent->K2_GiveAbility(*DefaultAbility);
-			}
-		}
+		return;
 	}
-	
+
+	//Give default abilities
+	STTAbilitySystemComponent->GiveCharacterAbilities(CharacterDataAsset->CharacterAbilitiesDataAsset->GetDefaultAbilities());
 }
 
-void ASTTCharacterBase::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	
-}
-
-void ASTTCharacterBase::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-
-	if(AbilitySystemComponent)
-	{
-		AbilitySystemComponent->RemoveActiveEffectsWithTags(InAirTags);
-	}
-}
-
-void ASTTCharacterBase::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	AbilitySystemComponent->InitAbilityActorInfo(GetPlayerState(), this);
-	GiveDefaultAbilities();
-	ApplyDefaultEffects();
-}
-
-void ASTTCharacterBase::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-	AbilitySystemComponent->InitAbilityActorInfo(GetPlayerState(), this);
-}
 
 UAbilitySystemComponent* ASTTCharacterBase::GetAbilitySystemComponent() const
 {
-	return AbilitySystemComponent.Get();
+	return AbilitySystemComponent;
+}
+
+UAttributeSet* ASTTCharacterBase::GetAttributeSet() const
+{
+	return AttributeSet;
 }
 
 void ASTTCharacterBase::GetDamage_Implementation(FGameplayEffectSpec& DamageEffect)
 {
-	if(IsValid(AbilitySystemComponent))
+	if(IsValid(GetAbilitySystemComponent()))
 	{
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(DamageEffect);
+		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(DamageEffect, GetAbilitySystemComponent());
 	}
 }
 
-void ASTTCharacterBase::UseNormalAttack(const FInputActionValue& Value)
-{
-	const bool bDebug = CVarShowDebugSTTCharacter.GetValueOnGameThread() != 0;
-
-	TSubclassOf<USTTGameplayAbilityBase> NextAbilityClass;
-
-	//Checking for last attack
-	if(IsValid(LastComboAttackClass))
-	{
-		//Get next Normal attack from the previous attack
-		NextAbilityClass = LastComboAttackClass.GetDefaultObject()->GetComboAttackStaticInfo().NextNormalAttackClass;
-		// If attack class is invalid, get default Normal attack class
-		if(!IsValid(NextAbilityClass))
-		{
-			NextAbilityClass = DefaultNormalAttackClass;
-			if(bDebug)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s next normal attack is invalid. Uses default ability: %s"), *LastComboAttackClass->GetName(), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL")));
-			}
-		}
-	}
-	//If last attack is invalid, get default Normal attack class
-	else
-	{
-		NextAbilityClass = DefaultNormalAttackClass;
-		if(bDebug)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last combo attack is invalid. Uses default ability: %s"), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL")));
-		}
-	}
-
-	//Try to activate ability
-	if(IsValid(NextAbilityClass) && IsValid(AbilitySystemComponent))
-	{
-		const bool bActivated = AbilitySystemComponent->TryActivateAbilityByClass(NextAbilityClass);
-		if(bDebug)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Activated ability %s %s"), *NextAbilityClass->GetName(), bActivated ? TEXT("successfuly") : TEXT("unseccessfuly")));
-		}
-	}
-	else if(bDebug)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Can't activate ability. Ability class: %s. AbilitySystemComponent: %s"), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL"), AbilitySystemComponent ? *AbilitySystemComponent.GetName() : TEXT("NULL")));
-	}
-}
-
-void ASTTCharacterBase::UseHardAttack(const FInputActionValue& Value)
-{
-	const bool bDebug = CVarShowDebugSTTCharacter.GetValueOnGameThread() != 0;
-
-	TSubclassOf<USTTGameplayAbilityBase> NextAbilityClass;
-
-	//Checking for last attack
-	if(IsValid(LastComboAttackClass))
-	{
-		//Get next Hard attack from the previous attack
-		NextAbilityClass = LastComboAttackClass.GetDefaultObject()->GetComboAttackStaticInfo().NextHardAttackClass;
-		// If attack class is invalid, get default Hard attack class
-		if(!IsValid(NextAbilityClass))
-		{
-			NextAbilityClass = DefaultHardAttackClass;
-			if(bDebug)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s next Hard attack is invalid. Uses default ability: %s"), *LastComboAttackClass->GetName(), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL")));
-			}
-		}
-	}
-	//If last attack is invalid, get default Hard attack class
-	else
-	{
-		NextAbilityClass = DefaultHardAttackClass;
-		if(bDebug)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last combo attack is invalid. Uses default ability: %s"), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL")));
-		}
-	}
-
-	//Try to activate ability
-	if(IsValid(NextAbilityClass) && IsValid(AbilitySystemComponent))
-	{
-		const bool bActivated = AbilitySystemComponent->TryActivateAbilityByClass(NextAbilityClass);
-		if(bDebug)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Activated ability %s %s"), *NextAbilityClass->GetName(), bActivated ? TEXT("successfuly") : TEXT("unseccessfuly")));
-		}
-	}
-	else if(bDebug)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Can't activate ability. Ability class: %s. AbilitySystemComponent: %s"), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL"), AbilitySystemComponent ? *AbilitySystemComponent.GetName() : TEXT("NULL")));
-	}
-}
 
 

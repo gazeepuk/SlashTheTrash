@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "CharacterAbilitiesDataAsset.generated.h"
 
+class UGameplayAbility;
 class USTTGameplayAbilityBase;
 /**
  * 
@@ -16,8 +17,8 @@ class SLASHTHETRASH_API UCharacterAbilitiesDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
-	const TArray<TSubclassOf<USTTGameplayAbilityBase>>& GetDefaultAbilities() const;
+	const TArray<TSubclassOf<UGameplayAbility>>& GetDefaultAbilities() const;
 private:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<USTTGameplayAbilityBase>> DefaultAbilities;
+	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 };

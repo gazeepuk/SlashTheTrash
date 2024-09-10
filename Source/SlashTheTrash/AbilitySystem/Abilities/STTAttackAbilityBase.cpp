@@ -22,7 +22,8 @@ void USTTAttackAbilityBase::PerformAbilityAction()
 		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(AttackEffectClass, 1, EffectContextHandle);
 		if(IDamageableInterface* DamageableActor = Cast<IDamageableInterface>(Target))
 		{
-			DamageableActor->GetDamage(*EffectSpecHandle.Data.Get());
+			DamageableActor->Execute_GetDamage(Target, *EffectSpecHandle.Data.Get());
+			RestoreEnergyOnce();
 		}
 	}
 }
@@ -35,5 +36,37 @@ void USTTAttackAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	{
 		return;
 	}
+	ResetRestoreEnergyOnce();
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+}
+
+void USTTAttackAbilityBase::RestoreEnergy()
+{
+	if(!bRestoreEnergy)
+	{
+		return;
+	}
+	
+	if(UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+		AbilitySystemComponent && IsValid(RestoreBattleEnergyEffectClass))
+	{
+		FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(RestoreBattleEnergyEffectClass, 1, EffectContextHandle);
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(BattleEnergyRegenTag, EnergyRegenAmount);
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+	}
+}
+
+void USTTAttackAbilityBase::RestoreEnergyOnce()
+{
+	if(bCanRestoreEnergyOnce)
+	{
+		RestoreEnergy();
+		bCanRestoreEnergyOnce = false;
+	}
+}
+
+void USTTAttackAbilityBase::ResetRestoreEnergyOnce()
+{
+	bCanRestoreEnergyOnce = true;
 }

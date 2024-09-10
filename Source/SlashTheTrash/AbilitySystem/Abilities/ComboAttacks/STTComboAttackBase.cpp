@@ -19,6 +19,6 @@ void USTTComboAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("USTTComboAttackBase slayed"));
 }

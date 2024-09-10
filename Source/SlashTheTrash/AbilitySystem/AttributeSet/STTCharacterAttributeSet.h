@@ -61,6 +61,11 @@ public:
 	FGameplayAttributeData UltimateEnergy;
 	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, UltimateEnergy)
 
+
+protected:
+
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+	
 	//Rep_Notifies
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
@@ -84,8 +89,4 @@ public:
 	virtual void OnRep_MaxUltimateEnergy(const FGameplayAttributeData& OldMaxUltimateEnergy);
 	UFUNCTION()
 	virtual void OnRep_UltimateEnergy(const FGameplayAttributeData& OldUltimateEnergy);
-
-protected:
-
-	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 };

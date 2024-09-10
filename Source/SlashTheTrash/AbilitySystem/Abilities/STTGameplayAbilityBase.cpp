@@ -3,10 +3,10 @@
 
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
 #include "AbilitySystemComponent.h"
-#include "Characters/STTCharacterBase.h"
+#include "Characters/STTPlayerCharacter.h"
 
-ASTTCharacterBase* USTTGameplayAbilityBase::GetSTTCharacterFromActorInfo() const
+ASTTPlayerCharacter* USTTGameplayAbilityBase::GetSTTPlayerCharacterFromActorInfo() const
 {
-	AActor* Owner = GetActorInfo().AbilitySystemComponent->GetOwner();
-	return Owner ? Cast<ASTTCharacterBase>(Owner) : nullptr;
+	AActor* Owner = GetActorInfo().AbilitySystemComponent->GetAvatarActor();
+	return Owner ? Cast<ASTTPlayerCharacter>(Owner) : nullptr;
 }
