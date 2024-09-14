@@ -23,6 +23,8 @@ struct FDefaultCharacterAttributes
 	float Attack = 0.f;
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 0))
 	float Defence = 0.f;
+	
+	//Scale as multipliers 
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 0))
 	float CritRate = 0.f;
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 0))
@@ -39,14 +41,18 @@ class SLASHTHETRASH_API UCharacterDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	//Data asset with default abilities
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TObjectPtr<UCharacterAbilitiesDataAsset> CharacterAbilitiesDataAsset;
+	//Data asset with character's animations 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TObjectPtr<UCharacterAnimationsDataAsset> CharacterAnimationsDataAsset;
+	//Effects to apply default attributes
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TSubclassOf<UGameplayEffect> DefaultPrimaryAttributesEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	const TSubclassOf<UGameplayEffect> DefaultSecondaryAttributesEffect;
+	//Structure with default attributes values 
 	UPROPERTY(EditDefaultsOnly)
 	FDefaultCharacterAttributes DefaultAttributes;
 };

@@ -20,5 +20,9 @@ void USTTComboAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	
+	if(!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle,ActorInfo,ActivationInfo, true, true);
+		return;
+	}
 }

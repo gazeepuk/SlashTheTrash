@@ -8,7 +8,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
 #include "AbilitySystem/Abilities/ComboAttacks/STTComboAttackBase.h"
+#include "AbilitySystem/Abilities/SkillAbilities/STTSkillAbilityBase.h"
+#include "AbilitySystem/Abilities/UltimateSkillAbilities/STTUltimateSkillAbilityBase.h"
 #include "Camera/CameraComponent.h"
+#include "Data/CharacterAbilitiesDataAsset.h"
+#include "Data/CharacterDataAsset.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PlayerStates/STTPlayerStateBase.h"
 
@@ -67,7 +71,7 @@ void ASTTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	//Bind InputActions
 	if(UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		//Bind Attacks
+		//Bind CombatAttacks
 		if(IsValid(NormalAttackInputAction))
 		{
 			EnhancedInputComponent->BindAction(NormalAttackInputAction, ETriggerEvent::Started, this, &ThisClass::UseNormalAttack);
@@ -76,6 +80,7 @@ void ASTTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		{
 			EnhancedInputComponent->BindAction(HardAttackInputAction, ETriggerEvent::Started, this, &ThisClass::UseHardAttack);
 		}
+		//Bind Movement
 		if(IsValid(MoveAction))
 		{
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
@@ -89,7 +94,16 @@ void ASTTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::StartJumpInput);
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::StopJumpInput);
 		}
-		
+		//Bind Skill ability
+		if(IsValid(SkillAction))
+		{
+			EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &ASTTPlayerCharacter::UseSkill);
+		}
+		//Bind Ultimate skill
+		if(IsValid(UltimateSkillAction))
+		{
+			EnhancedInputComponent->BindAction(UltimateSkillAction, ETriggerEvent::Started, this, &ASTTPlayerCharacter::UseUltimateSkill);
+		}
 	}
 }
 
@@ -252,6 +266,30 @@ void ASTTPlayerCharacter::UseHardAttack(const FInputActionValue& Value)
 	else if(bDebug)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Can't activate ability. Ability class: %s. AbilitySystemComponent: %s"), NextAbilityClass ? *NextAbilityClass->GetName() : TEXT("NULL"), AbilitySystemComponent ? *AbilitySystemComponent.GetName() : TEXT("NULL")));
+	}
+}
+
+void ASTTPlayerCharacter::UseSkill(const FInputActionValue& Value)
+{
+	if(GetAbilitySystemComponent() && CharacterDataAsset && CharacterDataAsset->CharacterAbilitiesDataAsset)
+	{
+		TSubclassOf<USTTSkillAbilityBase> SkillAbilityClass = CharacterDataAsset->CharacterAbilitiesDataAsset->GetSkillAbilityClass();
+		if(IsValid(SkillAbilityClass))
+		{
+			GetAbilitySystemComponent()->TryActivateAbilityByClass(SkillAbilityClass);
+		}
+	}
+}
+
+void ASTTPlayerCharacter::UseUltimateSkill(const FInputActionValue& Value)
+{
+	if(GetAbilitySystemComponent() && CharacterDataAsset && CharacterDataAsset->CharacterAbilitiesDataAsset)
+	{
+		TSubclassOf<USTTUltimateSkillAbilityBase> UltimateSkillAbilityClass = CharacterDataAsset->CharacterAbilitiesDataAsset->GetUltimateSkillAbilityClass();
+		if(IsValid(UltimateSkillAbilityClass))
+		{
+			GetAbilitySystemComponent()->TryActivateAbilityByClass(UltimateSkillAbilityClass);
+		}
 	}
 }
 
