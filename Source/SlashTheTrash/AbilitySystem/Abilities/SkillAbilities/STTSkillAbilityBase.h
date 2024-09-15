@@ -13,5 +13,5 @@ UCLASS()
 class SLASHTHETRASH_API USTTSkillAbilityBase : public USTTAttackAbilityBase
 {
 	GENERATED_BODY()
-
+	
 };

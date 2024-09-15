@@ -16,7 +16,7 @@ class SLASHTHETRASH_API USTTAttackAbilityBase : public USTTGameplayAbilityBase
 protected:
 	//Ability animation
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	const TObjectPtr<UAnimMontage> AttackMontage;
+	const TObjectPtr<UAnimMontage> AbilityMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bRestoreEnergy = false;
@@ -53,5 +53,5 @@ protected:
 	bool bTargetIsSelf = false;
 private:
 	//Using for ResetRestoreEnergyOnce check
-	bool bCanRestoreEnergyOnce = false;
+	bool bCanRestoreEnergyOnce = true;
 };
