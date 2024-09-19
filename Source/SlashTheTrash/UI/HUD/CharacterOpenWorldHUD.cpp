@@ -49,6 +49,7 @@ UOverlayOpenWorldWidgetController* ACharacterOpenWorldHUD::GetOverlayOpenWorldWi
 		{
 			OverlayOpenWorldWidgetController = NewObject<UOverlayOpenWorldWidgetController>(this, OverlayOpenWorldWidgetControllerClass);
 			OverlayOpenWorldWidgetController->SetWidgetControllerParams(InParams);
+			OverlayOpenWorldWidgetController->BindCallbacksToDependencies();
 			return OverlayOpenWorldWidgetController;
 		}
 		return nullptr;

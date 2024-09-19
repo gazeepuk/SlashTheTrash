@@ -19,7 +19,9 @@ public:
 	//WidgetController Setter
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetController(UWidgetControllerBase* InWidgetController);
-
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UWidgetControllerBase* GetWidgetController() const {return WidgetController;}
+	
 	//Event invokes on SetWidgetController
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnWidgetControllerSet();

@@ -16,8 +16,6 @@ void USTTCharacterAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, EnergyRegen, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, CritRate, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, CritDamage, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, MaxBattleEnergy, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, BattleEnergy, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, MaxUltimateEnergy, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USTTCharacterAttributeSet, UltimateEnergy, COND_None, REPNOTIFY_Always);
 	
@@ -57,16 +55,6 @@ GAMEPLAYATTRIBUTE_REPNOTIFY(USTTCharacterAttributeSet, CritRate, OldCritRate);
 void USTTCharacterAttributeSet::OnRep_CritDamage(const FGameplayAttributeData& OldCritDamage)
 {
 GAMEPLAYATTRIBUTE_REPNOTIFY(USTTCharacterAttributeSet, CritDamage, OldCritDamage);
-}
-
-void USTTCharacterAttributeSet::OnRep_MaxBattleEnergy(const FGameplayAttributeData& OldMaxBattleEnergy)
-{
-GAMEPLAYATTRIBUTE_REPNOTIFY(USTTCharacterAttributeSet, MaxBattleEnergy, OldMaxBattleEnergy);
-}
-
-void USTTCharacterAttributeSet::OnRep_BattleEnergy(const FGameplayAttributeData& OldBattleEnergy)
-{
-GAMEPLAYATTRIBUTE_REPNOTIFY(USTTCharacterAttributeSet, BattleEnergy, OldBattleEnergy);
 }
 
 void USTTCharacterAttributeSet::OnRep_MaxUltimateEnergy(const FGameplayAttributeData& OldMaxUltimateEnergy)

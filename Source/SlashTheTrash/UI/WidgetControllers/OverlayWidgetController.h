@@ -13,5 +13,8 @@ UCLASS()
 class SLASHTHETRASH_API UOverlayOpenWorldWidgetController : public UWidgetControllerBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void BroadcastInitValues() override;
+	virtual void BindCallbacksToDependencies() override;
 };

@@ -4,11 +4,29 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
-#include "UObject/NoExportTypes.h"
+#include "AbilitySystem/AttributeSet/STTCharacterAttributeSet.h"
 #include "WidgetControllerBase.generated.h"
 
 class UAttributeSet;
 class UAbilitySystemComponent;
+
+//AttributeSet values Delegates
+//Health
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHealthChanged, float, NewHealth, float, OldHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMaxHealthChanged, float, NewMaxHealth, float, OldMaxHealth);
+//Ultimate Energy
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUltimateEnergyChanged, float, NewUltimateEnergy, float, OldUltimateEnergy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMaxUltimateEnergyChanged, float, NewMaxUltimateEnergy, float, OldMaxUltimateEnergy);
+//Attack
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAttackChanged, float, NewAttack, float, OldAttack);
+//Defence
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDefenceChanged, float, NewDefence, float, OldDefence);
+//Energy Regeneration
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEnergyRegenChanged, float, NewEnergyRegen, float, OldEnergyRegen);
+//Critical Damage
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCritDamageChanged, float, NewCritDamage, float, OldCritDamage);
+//Critical Rate
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCritRateChanged, float, NewCritRate, float, OldCritRate);
 
 USTRUCT(BlueprintType, Blueprintable)
 struct FWidgetControllerParams
@@ -42,6 +60,35 @@ public:
 	//Set params values 
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& InParameters);
+	//Broadcast initial values
+	UFUNCTION(BlueprintCallable)
+	virtual void BroadcastInitValues(){}
+	//Bind callbacks
+	UFUNCTION(BlueprintCallable)
+	virtual void BindCallbacksToDependencies(){}
+
+	USTTCharacterAttributeSet* GetSTTAttributeSet() const {return CastChecked<USTTCharacterAttributeSet>(AttributeSet);}
+	
+	//Attribute values delegates
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FMaxHealthChanged OnMaxHealthChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FHealthChanged OnHealthChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FMaxUltimateEnergyChanged OnMaxUltimateEnergyChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FUltimateEnergyChanged OnUltimateEnergyChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FAttackChanged OnAttackChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FDefenceChanged OnDefenceChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FEnergyRegenChanged OnEnergyRegenChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FCritDamageChanged OnCritDamageChangedDelegate;
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FCritRateChanged OnCritRateChangedDelegate;
+	
 protected:
 	//Params
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
@@ -52,4 +99,16 @@ protected:
 	TObjectPtr<APlayerController> PlayerController;
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	TObjectPtr<APlayerState> PlayerState;
+
+	//GameplayAttributeValueChangeDelegate callbacks
+	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data) const;
+	virtual void HealthChanged(const FOnAttributeChangeData& Data) const;
+	virtual void MaxUltimateEnergyChanged(const FOnAttributeChangeData& Data) const;
+	virtual void UltimateEnergyChanged(const FOnAttributeChangeData& Data) const;
+	virtual void AttackChanged(const FOnAttributeChangeData& Data) const;
+	virtual void DefenceChanged(const FOnAttributeChangeData& Data) const;
+	virtual void EnergyRegenChanged(const FOnAttributeChangeData& Data) const;
+	virtual void CritDamageChanged(const FOnAttributeChangeData& Data) const;
+	virtual void CritRateChanged(const FOnAttributeChangeData& Data) const;
+	
 };

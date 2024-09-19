@@ -25,7 +25,7 @@ class SLASHTHETRASH_API USTTCharacterAttributeSet : public UAttributeSet
 public:
 	//Setup replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 	//Attributes
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
@@ -48,12 +48,6 @@ public:
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_CritDamage)
 	FGameplayAttributeData CritDamage;
 	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, CritDamage)
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_MaxBattleEnergy)
-	FGameplayAttributeData MaxBattleEnergy;
-	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, MaxBattleEnergy)
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_BattleEnergy)
-	FGameplayAttributeData BattleEnergy;
-	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, BattleEnergy)
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_MaxUltimateEnergy)
 	FGameplayAttributeData MaxUltimateEnergy;
 	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, MaxUltimateEnergy)
@@ -81,10 +75,6 @@ protected:
 	virtual void OnRep_CritRate(const FGameplayAttributeData& OldCritRate);
 	UFUNCTION()
 	virtual void OnRep_CritDamage(const FGameplayAttributeData& OldCritDamage);
-	UFUNCTION()
-	virtual void OnRep_MaxBattleEnergy(const FGameplayAttributeData& OldMaxBattleEnergy);
-	UFUNCTION()
-	virtual void OnRep_BattleEnergy(const FGameplayAttributeData& OldBattleEnergy);
 	UFUNCTION()
 	virtual void OnRep_MaxUltimateEnergy(const FGameplayAttributeData& OldMaxUltimateEnergy);
 	UFUNCTION()
