@@ -55,7 +55,7 @@ void USTTAttackAbilityBase::ApplyEffectToSelf()
 
 void USTTAttackAbilityBase::PerformAbilityAction()
 {
-	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
 	if(!AbilityEffectClass || !AbilitySystemComponent)
 	{
 		return;
