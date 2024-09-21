@@ -6,13 +6,30 @@
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
 #include "STTAttackAbilityBase.generated.h"
 
+USTRUCT(Blueprintable, BlueprintType)
+struct FAbilityUIInfo
+{
+	GENERATED_BODY()
+
+	//Constructors
+	FAbilityUIInfo(){}
+	FAbilityUIInfo(UTexture2D* InAbilityTexture, FLinearColor InFillColor) : AbilityImage(InAbilityTexture), FillColor(InFillColor){}
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UTexture2D> AbilityImage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FLinearColor FillColor = FLinearColor::Gray;
+};
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class SLASHTHETRASH_API USTTAttackAbilityBase : public USTTGameplayAbilityBase
 {
 	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FAbilityUIInfo& GetAbilityUIInfo() const {return AbilityUIInfo;}
 protected:
 	//Ability animation
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -51,6 +68,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	bool bTargetIsSelf = false;
+
+	//Structure for UI widgets
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FAbilityUIInfo AbilityUIInfo;
 private:
 	//Using for ResetRestoreEnergyOnce check
 	bool bCanRestoreEnergyOnce = true;

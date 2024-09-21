@@ -8,10 +8,11 @@
 #include "Characters/STTCharacterBase.h"
 #include "STTPlayerCharacter.generated.h"
 
+class USTTAttackAbilityBase;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class SLASHTHETRASH_API ASTTPlayerCharacter : public ASTTCharacterBase
 {
 	GENERATED_BODY()
@@ -24,7 +25,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetLastComboAttackClass();
 
-	
 protected:
 	//ACharacter Interface
 	virtual void BeginPlay() override;

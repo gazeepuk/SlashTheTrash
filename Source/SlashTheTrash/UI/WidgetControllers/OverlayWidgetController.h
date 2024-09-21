@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/WidgetControllers/WidgetControllerBase.h"
+#include "STTCharacterWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SLASHTHETRASH_API UOverlayOpenWorldWidgetController : public UWidgetControllerBase
+class SLASHTHETRASH_API UOverlayOpenWorldWidgetController : public USTTCharacterWidgetController
 {
 	GENERATED_BODY()
 
