@@ -55,3 +55,8 @@ void UWidgetControllerBase::CritRateChanged(const FOnAttributeChangeData& Data) 
 {
 	OnCritDamageChangedDelegate.Broadcast(Data.NewValue, Data.OldValue);
 }
+
+void UWidgetControllerBase::AbilityCommited(UGameplayAbility* GameplayAbility)
+{
+	
+}

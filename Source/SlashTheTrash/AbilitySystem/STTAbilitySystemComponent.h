@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "STTAbilitySystemComponent.generated.h"
-
 /**
  * 
  */

@@ -30,5 +30,7 @@ void UOverlayOpenWorldWidgetController::BindCallbacksToDependencies()
 		//Binding ultimate energy attributes
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(STTAttributeSet->GetUltimateEnergyAttribute()).AddUObject(this, &ThisClass::UltimateEnergyChanged);
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(STTAttributeSet->GetMaxUltimateEnergyAttribute()).AddUObject(this, &ThisClass::MaxUltimateEnergyChanged);
+		//Binding GameplayAbility activation
+		AbilitySystemComponent->AbilityCommittedCallbacks.AddUObject(this, &ThisClass::AbilityCommited);
 	}
 }

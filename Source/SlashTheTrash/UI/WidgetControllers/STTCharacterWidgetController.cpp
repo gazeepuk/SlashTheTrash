@@ -3,6 +3,7 @@
 
 #include "UI/WidgetControllers/STTCharacterWidgetController.h"
 
+#include "AbilitySystem/Abilities/SkillAbilities/STTSkillAbilityBase.h"
 #include "Characters/STTCharacterBase.h"
 #include "Data/CharacterDataAsset.h"
 #include "Data/CharacterAbilitiesDataAsset.h"
@@ -47,4 +48,42 @@ TSubclassOf<USTTSkillAbilityBase> USTTCharacterWidgetController::GetSkillAbility
 FAbilityUIInfo USTTCharacterWidgetController::GetAbilityUIInfoByClass(TSubclassOf<USTTAttackAbilityBase> AttackAbilityClass)
 {
 	return AttackAbilityClass.GetDefaultObject()->GetAbilityUIInfo();
+}
+
+void USTTCharacterWidgetController::AbilityCommited(UGameplayAbility* GameplayAbility)
+{
+	if(GameplayAbility)
+	{
+		OnGameplayAbilityCommited.Broadcast(GameplayAbility);
+		if(GetUltiamteAbilityClass() && GameplayAbility->IsA(GetUltiamteAbilityClass()))
+		{
+			UltimateAbilityCommited(GameplayAbility);
+		}
+		if(GetSkillAbilityClass() && GameplayAbility->IsA(GetSkillAbilityClass()))
+		{
+			SkillAbilityCommited(GameplayAbility);
+		}
+		if(SpecialAbilityClass && GameplayAbility->IsA(SpecialAbilityClass))
+		{
+			SpecialAbilityCommited(GameplayAbility);
+		}
+	}
+}
+
+void USTTCharacterWidgetController::SkillAbilityCommited(UGameplayAbility* GameplayAbility)
+{
+	OnSkillAbilityCommited.Broadcast(GameplayAbility);
+}
+
+void USTTCharacterWidgetController::UltimateAbilityCommited(UGameplayAbility* GameplayAbility)
+{
+	OnUltimateAbilityCommited.Broadcast(GameplayAbility);
+}
+
+void USTTCharacterWidgetController::SpecialAbilityCommited(UGameplayAbility* GameplayAbility)
+{
+	if(GameplayAbility && SpecialAbilityClass && GameplayAbility->IsA(SpecialAbilityClass))
+	{
+		OnSpecialAbilityCommited.Broadcast(GameplayAbility);
+	}
 }

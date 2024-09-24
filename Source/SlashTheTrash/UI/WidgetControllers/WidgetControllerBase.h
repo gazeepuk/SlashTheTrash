@@ -27,6 +27,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEnergyRegenChanged, float, NewEner
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCritDamageChanged, float, NewCritDamage, float, OldCritDamage);
 //Critical Rate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCritRateChanged, float, NewCritRate, float, OldCritRate);
+//Gameplay ability commited delegate
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameplayAbilityCommited, const UGameplayAbility*, ActivatedAbility);
 
 USTRUCT(BlueprintType, Blueprintable)
 struct FWidgetControllerParams
@@ -88,6 +90,9 @@ public:
 	FCritDamageChanged OnCritDamageChangedDelegate;
 	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
 	FCritRateChanged OnCritRateChangedDelegate;
+	//GameplayAbility commited delegate
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FGameplayAbilityCommited OnGameplayAbilityCommited;
 	
 protected:
 	//Params
@@ -110,5 +115,5 @@ protected:
 	virtual void EnergyRegenChanged(const FOnAttributeChangeData& Data) const;
 	virtual void CritDamageChanged(const FOnAttributeChangeData& Data) const;
 	virtual void CritRateChanged(const FOnAttributeChangeData& Data) const;
-	
+	virtual void AbilityCommited(UGameplayAbility* GameplayAbility);
 };
