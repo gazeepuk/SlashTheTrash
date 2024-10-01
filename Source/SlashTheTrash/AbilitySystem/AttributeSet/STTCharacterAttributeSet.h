@@ -55,7 +55,15 @@ public:
 	FGameplayAttributeData UltimateEnergy;
 	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, UltimateEnergy)
 
+	//Meta attributes
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, IncomingDamage)
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayAttributeData IncomingEnergy;
+	ATTRIBUTE_ACCESSORS(USTTCharacterAttributeSet, IncomingEnergy)
 
+	
 protected:
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;

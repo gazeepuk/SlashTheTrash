@@ -74,27 +74,49 @@ void USTTCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectM
 
 	if(Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
+		//Clamp new health
 		SetHealth(FMath::Clamp(GetHealth(), 0, GetMaxHealth()));
 	}
 	if(Data.EvaluatedData.Attribute == GetUltimateEnergyAttribute())
 	{
-		//Applying EnergyRegen bonus
-		
-		float EnergyValueToRestore = Data.EvaluatedData.Magnitude;
-		//Undo restoring energy
-		float CurrentUltimateEnergy = GetUltimateEnergy();
-		SetUltimateEnergy(FMath::Clamp(CurrentUltimateEnergy - EnergyValueToRestore, 0, GetMaxUltimateEnergy()));
-		CurrentUltimateEnergy = GetUltimateEnergy();
-		//Get EnergyRegen bonus
-		float EnergyRegenValue = FMath::Max(1, GetEnergyRegen());
-
-		//Apply bonus to restoring energy
-		EnergyValueToRestore *= EnergyRegenValue;
-
-		//Calculate final ultimate energy value 
-		float FinalUltimateEnergyValue = CurrentUltimateEnergy + EnergyValueToRestore;
-		FinalUltimateEnergyValue = FMath::Clamp(FinalUltimateEnergyValue, 0, GetMaxUltimateEnergy());
-		SetUltimateEnergy(FinalUltimateEnergyValue);
+		const float EnergyValueToRestore = Data.EvaluatedData.Magnitude;
+		//Clamp new value
+		SetUltimateEnergy(FMath::Clamp(EnergyValueToRestore, 0, GetMaxUltimateEnergy()));
 	}
+	if(Data.EvaluatedData.Attribute == GetIncomingEnergyAttribute())
+	{
+		//Get incoming energy value 
+		const float LocalIncomingEnergy = GetIncomingEnergy();
+		SetIncomingEnergy(0);
+
+		//Apply RestoreEnergy multiplier
+		const float LocalEnergyRegen = FMath::Max(0, GetEnergyRegen());
+		float EnergyToRestore = LocalIncomingEnergy * LocalEnergyRegen;
+		
+		//Set new UltimateEnergy value with clamping
+		SetUltimateEnergy(FMath::Clamp(GetUltimateEnergy() + EnergyToRestore, 0.f, GetMaxUltimateEnergy()));
+	}
+	if(Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
+	{
+		//Ge incoming damage
+		const float LocalIncomingDamage = GetIncomingDamage();
+		SetIncomingDamage(0);
+
+		//Calculate damage to apply
+		float DamageToApply = 0.f;
+		if(LocalIncomingDamage >= GetDefence())
+		{
+			DamageToApply = LocalIncomingDamage * 2.f - GetDefence();
+		}
+		else
+		{
+			DamageToApply = LocalIncomingDamage * LocalIncomingDamage / GetDefence();
+		}
+
+		//Apply new health with clamping
+		const float NewHealth = GetHealth() - DamageToApply;
+		SetHealth(FMath::Clamp(NewHealth, 0 ,GetMaxHealth()));
+	}
+
 }
 #pragma endregion

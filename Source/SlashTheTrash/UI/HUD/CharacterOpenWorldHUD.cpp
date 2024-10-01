@@ -14,7 +14,7 @@ FWidgetControllerParams ACharacterOpenWorldHUD::GetWidgetControllerParams() cons
 	APlayerController* PC = GetOwningPlayerController();
 	ASTTPlayerStateBase* PS = PC ? PC->GetPlayerState<ASTTPlayerStateBase>() : nullptr;
 	UAbilitySystemComponent* ASC = PS ? PS->GetAbilitySystemComponent() : nullptr;
-	UAttributeSet* AS = PC ? PS->GetAttributeSet() : nullptr;
+	UAttributeSet* AS = PS ? PS->GetAttributeSet() : nullptr;
 	
 	return FWidgetControllerParams(ASC,AS,PC,PS);
 }
