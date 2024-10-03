@@ -17,11 +17,15 @@ class SLASHTHETRASH_API ASTTPlayerCharacter : public ASTTCharacterBase
 {
 	GENERATED_BODY()
 public:
+	ASTTPlayerCharacter();
+	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const override;
-	
-	ASTTPlayerCharacter();
 
+	// CombatInterface
+	virtual int32 GetPlayerLevel() override;
+
+	
 	UFUNCTION(BlueprintCallable)
 	void ResetLastComboAttackClass();
 

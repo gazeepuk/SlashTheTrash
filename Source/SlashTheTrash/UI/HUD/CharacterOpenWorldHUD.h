@@ -20,17 +20,21 @@ class SLASHTHETRASH_API ACharacterOpenWorldHUD : public ASTTHUDBase
 public:
 	//Get WidgetController from HUD
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWidgetControllerParams GetWidgetControllerParams() const;
+	UWidgetControllerParams* GetWidgetControllerParams() const;
+
+	template<class T>
+	UWidgetControllerParams* GetWidgetControllerParamsByClass() const;
+	
 
 	//Set OverlayWidget
 	UFUNCTION(BlueprintCallable)
 	void SetOverlayOpenWorldWidgetFromHUD();
 	UFUNCTION(BlueprintCallable)
-	void SetOverlayOpenWorldWidget(const FWidgetControllerParams& InWidgetParams);
+	void SetOverlayOpenWorldWidget(UWidgetControllerParams* InWidgetParams);
 
 	//Getter OverlayOpenWorldController 
 	UFUNCTION(BlueprintCallable)
-	UOverlayOpenWorldWidgetController* GetOverlayOpenWorldWidgetController(const FWidgetControllerParams& InParams);
+	UOverlayOpenWorldWidgetController* GetOverlayOpenWorldWidgetController(UWidgetControllerParams* InParams);
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)

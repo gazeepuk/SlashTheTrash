@@ -3,12 +3,21 @@
 
 #include "UI/WidgetControllers/WidgetControllerBase.h"
 
-void UWidgetControllerBase::SetWidgetControllerParams(const FWidgetControllerParams& InParameters)
+void UWidgetControllerParams::InitParams(UAbilitySystemComponent* InASC, UAttributeSet* InAS, APlayerController* InPC,
+	APlayerState* InPS)
 {
-	AbilitySystemComponent = InParameters.AbilitySystemComponent;
-	AttributeSet = InParameters.AttributeSet;
-	PlayerController = InParameters.PlayerController;
-	PlayerState = InParameters.PlayerState;
+	AbilitySystemComponent = InASC;
+	AttributeSet = InAS;
+	PlayerController = InPC;
+	PlayerState = InPS;
+}
+
+void UWidgetControllerBase::SetWidgetControllerParams(UWidgetControllerParams* InParameters)
+{
+	AbilitySystemComponent = InParameters->AbilitySystemComponent;
+	AttributeSet = InParameters->AttributeSet;
+	PlayerController = InParameters->PlayerController;
+	PlayerState = InParameters->PlayerState;
 }
 
 void UWidgetControllerBase::MaxHealthChanged(const FOnAttributeChangeData& Data) const
@@ -56,7 +65,7 @@ void UWidgetControllerBase::CritRateChanged(const FOnAttributeChangeData& Data) 
 	OnCritDamageChangedDelegate.Broadcast(Data.NewValue, Data.OldValue);
 }
 
-void UWidgetControllerBase::AbilityCommited(UGameplayAbility* GameplayAbility)
+void UWidgetControllerBase::AbilityCommitted(UGameplayAbility* GameplayAbility)
 {
-	
+	OnGameplayAbilityCommited.Broadcast(GameplayAbility);	
 }

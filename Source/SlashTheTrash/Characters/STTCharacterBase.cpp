@@ -9,8 +9,7 @@
 #include "Data/CharacterDataAsset.h"
 #include "Data/CharacterAbilitiesDataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
-
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values
@@ -40,6 +39,13 @@ ASTTCharacterBase::ASTTCharacterBase()
 	
 }
 
+void ASTTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASTTCharacterBase, AbilitySystemComponent);
+	DOREPLIFETIME(ASTTCharacterBase, AttributeSet);
+}
+
 
 // Called when the game starts or when spawned
 void ASTTCharacterBase::BeginPlay()
@@ -51,16 +57,22 @@ void ASTTCharacterBase::BeginPlay()
 
 void ASTTCharacterBase::ApplyDefaultAttributes()
 {
-	check(IsValid(GetAbilitySystemComponent()));
+	ApplyPriamryAttributes();
+	ApplySecondaryAttributes();
+}
+
+void ASTTCharacterBase::ApplyPriamryAttributes()
+{
+	check(GetAbilitySystemComponent());
 	check(CharacterDataAsset);
 	check(CharacterDataAsset->DefaultPrimaryAttributesEffect);
-	check(CharacterDataAsset->DefaultSecondaryAttributesEffect);
 
 	//Preparing default attributes effect
 	FGameplayEffectContextHandle PrimaryContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	FGameplayEffectSpecHandle PrimarySpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultPrimaryAttributesEffect, 1, PrimaryContextHandle);
+	PrimaryContextHandle.AddSourceObject(this);
+	const FGameplayEffectSpecHandle PrimarySpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultPrimaryAttributesEffect, GetPlayerLevel(), PrimaryContextHandle);
 
-	UGameplayTagsManager& TagsManager = UGameplayTagsManager::Get();
+	const UGameplayTagsManager& TagsManager = UGameplayTagsManager::Get();
 
 	//Setup for SetByCaller
 	PrimarySpecHandle.Data->SetSetByCallerMagnitude(TagsManager.RequestGameplayTag("Event.Effect.SetMaxHealth"), CharacterDataAsset->DefaultAttributes.MaxHealth);
@@ -73,18 +85,21 @@ void ASTTCharacterBase::ApplyDefaultAttributes()
 
 	//Applying default attributes effect
 	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*PrimarySpecHandle.Data.Get());
+	
+}
 
-	//Preparing secondary attributes effect
-	FGameplayEffectContextHandle SecondaryContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	FGameplayEffectSpecHandle SecondarySpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(CharacterDataAsset->DefaultSecondaryAttributesEffect, 1, SecondaryContextHandle);
-	//Applying secondary attributes effect
-	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SecondarySpecHandle.Data.Get());
+void ASTTCharacterBase::ApplySecondaryAttributes()
+{
+	checkf(GetAbilitySystemComponent(), TEXT("Ability system component is null"));
+	checkf(CharacterDataAsset, TEXT("Charcter data asset is null"));
+	checkf(CharacterDataAsset->DefaultSecondaryAttributesEffect, TEXT("Secondary attributes effect class is null"));
+	ApplyEffectToSelf(CharacterDataAsset->DefaultSecondaryAttributesEffect, GetPlayerLevel());
 }
 
 
 void ASTTCharacterBase::GiveDefaultAbilities() const
 {
-	USTTAbilitySystemComponent* STTAbilitySystemComponent = CastChecked<USTTAbilitySystemComponent>(GetAbilitySystemComponent(), ECastCheckedType::NullAllowed);
+	USTTAbilitySystemComponent* STTAbilitySystemComponent = CastChecked<USTTAbilitySystemComponent>(GetAbilitySystemComponent());
 	if(!HasAuthority() || !STTAbilitySystemComponent || !IsValid(CharacterDataAsset) || !IsValid(CharacterDataAsset->CharacterAbilitiesDataAsset))
 	{
 		return;
@@ -111,6 +126,16 @@ void ASTTCharacterBase::GetDamage_Implementation(FGameplayEffectSpec& DamageEffe
 	{
 		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(DamageEffect, GetAbilitySystemComponent());
 	}
+}
+
+void ASTTCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level) const
+{
+	check(IsValid(GetAbilitySystemComponent()));
+	check(GameplayEffectClass);
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	ContextHandle.AddSourceObject(this);
+	const FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass, Level, ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
 

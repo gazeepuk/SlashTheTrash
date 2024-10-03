@@ -15,8 +15,14 @@ class SLASHTHETRASH_API ASTTEnemyCharacter : public ASTTCharacterBase
 	GENERATED_BODY()
 public:
 	ASTTEnemyCharacter();
+
+	// Combat Interface
+	virtual int32 GetPlayerLevel() override {return Level;}
 	
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitAbilitySystemComponent() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Level = 1;
 };

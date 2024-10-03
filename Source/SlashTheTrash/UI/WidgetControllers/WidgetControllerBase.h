@@ -30,17 +30,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCritRateChanged, float, NewCritRat
 //Gameplay ability commited delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameplayAbilityCommited, const UGameplayAbility*, ActivatedAbility);
 
-USTRUCT(BlueprintType, Blueprintable)
-struct FWidgetControllerParams
+UCLASS(BlueprintType, Blueprintable)
+class SLASHTHETRASH_API UWidgetControllerParams : public UObject
 {
 	GENERATED_BODY()
 
-	//Default constructor
-	FWidgetControllerParams(){}
-	//Constructor with parameters
-	FWidgetControllerParams(UAbilitySystemComponent* InASC, UAttributeSet* InAS, APlayerController* InPC, APlayerState* InPS)
-	:AbilitySystemComponent(InASC),AttributeSet(InAS),PlayerController(InPC),PlayerState(InPS){}
-	
+public:
+	virtual void InitParams(UAbilitySystemComponent* InASC, UAttributeSet* InAS, APlayerController* InPC, APlayerState* InPS);
 	//Parameters
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
@@ -61,7 +57,7 @@ class SLASHTHETRASH_API UWidgetControllerBase : public UObject
 public:
 	//Set params values 
 	UFUNCTION(BlueprintCallable)
-	void SetWidgetControllerParams(const FWidgetControllerParams& InParameters);
+	virtual void SetWidgetControllerParams(UWidgetControllerParams* InParameters);
 	//Broadcast initial values
 	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitValues(){}
@@ -115,5 +111,5 @@ protected:
 	virtual void EnergyRegenChanged(const FOnAttributeChangeData& Data) const;
 	virtual void CritDamageChanged(const FOnAttributeChangeData& Data) const;
 	virtual void CritRateChanged(const FOnAttributeChangeData& Data) const;
-	virtual void AbilityCommited(UGameplayAbility* GameplayAbility);
+	virtual void AbilityCommitted(UGameplayAbility* GameplayAbility);
 };

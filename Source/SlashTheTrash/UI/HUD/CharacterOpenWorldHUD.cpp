@@ -3,28 +3,37 @@
 
 #include "UI/HUD/CharacterOpenWorldHUD.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "PlayerStates/STTPlayerStateBase.h"
 #include "UI/WidgetControllers/OverlayWidgetController.h"
 #include "UI/Widgets/OpenWorld/OverlayOpenWorldWidget.h"
 
 
-FWidgetControllerParams ACharacterOpenWorldHUD::GetWidgetControllerParams() const
+UWidgetControllerParams* ACharacterOpenWorldHUD::GetWidgetControllerParams() const
 {
-	
+	return GetWidgetControllerParamsByClass<UWidgetControllerParams>();
+}
+
+template <class T>
+UWidgetControllerParams* ACharacterOpenWorldHUD::GetWidgetControllerParamsByClass() const
+{
 	APlayerController* PC = GetOwningPlayerController();
-	ASTTPlayerStateBase* PS = PC ? PC->GetPlayerState<ASTTPlayerStateBase>() : nullptr;
+	APlayerState* State = UGameplayStatics::GetPlayerState(this, 0);
+	ASTTPlayerStateBase* PS = State ? Cast<ASTTPlayerStateBase>(State) : nullptr;
 	UAbilitySystemComponent* ASC = PS ? PS->GetAbilitySystemComponent() : nullptr;
 	UAttributeSet* AS = PS ? PS->GetAttributeSet() : nullptr;
-	
-	return FWidgetControllerParams(ASC,AS,PC,PS);
+
+	UWidgetControllerParams* WidgetControllerParams = NewObject<T>();
+	WidgetControllerParams->InitParams(ASC,AS,PC,PS);
+	return WidgetControllerParams;
 }
 
 void ACharacterOpenWorldHUD::SetOverlayOpenWorldWidgetFromHUD()
 {
-	SetOverlayOpenWorldWidget(GetWidgetControllerParams());
+	SetOverlayOpenWorldWidget(GetWidgetControllerParamsByClass<UCharacterWidgetControllerParams>());
 }
 
-void ACharacterOpenWorldHUD::SetOverlayOpenWorldWidget(const FWidgetControllerParams& InWidgetParams)
+void ACharacterOpenWorldHUD::SetOverlayOpenWorldWidget(UWidgetControllerParams* InWidgetParams)
 {
 	//Create widget
 	if(IsValid(OverlayOpenWorldWidgetClass))
@@ -40,7 +49,7 @@ void ACharacterOpenWorldHUD::SetOverlayOpenWorldWidget(const FWidgetControllerPa
 	}
 }
 
-UOverlayOpenWorldWidgetController* ACharacterOpenWorldHUD::GetOverlayOpenWorldWidgetController(const FWidgetControllerParams& InParams)
+UOverlayOpenWorldWidgetController* ACharacterOpenWorldHUD::GetOverlayOpenWorldWidgetController(UWidgetControllerParams* InParams)
 {
 	//Create WidgetController if it doesn't exist
 	if(!OverlayOpenWorldWidgetController)

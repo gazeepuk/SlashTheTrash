@@ -67,6 +67,7 @@ void USTTCharacterAttributeSet::OnRep_UltimateEnergy(const FGameplayAttributeDat
 GAMEPLAYATTRIBUTE_REPNOTIFY(USTTCharacterAttributeSet, UltimateEnergy, OldUltimateEnergy);
 }
 
+#pragma endregion
 
 void USTTCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
@@ -98,7 +99,7 @@ void USTTCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectM
 	}
 	if(Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{
-		//Ge incoming damage
+		//Get incoming damage
 		const float LocalIncomingDamage = GetIncomingDamage();
 		SetIncomingDamage(0);
 

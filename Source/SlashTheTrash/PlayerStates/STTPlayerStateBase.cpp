@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/STTAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/STTCharacterAttributeSet.h"
+#include "Net/UnrealNetwork.h"
 
 ASTTPlayerStateBase::ASTTPlayerStateBase()
 {
@@ -17,6 +18,12 @@ ASTTPlayerStateBase::ASTTPlayerStateBase()
 	NetUpdateFrequency = 100;
 }
 
+void ASTTPlayerStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASTTPlayerStateBase, Level);
+}
+
 UAbilitySystemComponent* ASTTPlayerStateBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
@@ -25,4 +32,8 @@ UAbilitySystemComponent* ASTTPlayerStateBase::GetAbilitySystemComponent() const
 UAttributeSet* ASTTPlayerStateBase::GetAttributeSet() const
 {
 	return AttributeSet;
+}
+
+void ASTTPlayerStateBase::OnRep_Level(int32 OldLevel)
+{
 }

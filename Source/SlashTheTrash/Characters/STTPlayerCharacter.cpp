@@ -14,7 +14,9 @@
 #include "Data/CharacterAbilitiesDataAsset.h"
 #include "Data/CharacterDataAsset.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "PlayerStates/STTPlayerStateBase.h"
+#include "UI/HUD/CharacterOpenWorldHUD.h"
 
 static TAutoConsoleVariable<int32> CVarShowDebugSTTCharacter(
 	TEXT("ShowDebugSTTCharacter"),
@@ -35,6 +37,13 @@ UAttributeSet* ASTTPlayerCharacter::GetAttributeSet() const
 {
 	ASTTPlayerStateBase* STTPlayerState = GetPlayerState<ASTTPlayerStateBase>();
 	return STTPlayerState ? STTPlayerState->GetAttributeSet() : nullptr;
+}
+
+int32 ASTTPlayerCharacter::GetPlayerLevel()
+{
+	ASTTPlayerStateBase* STTPlayerState = GetPlayerState<ASTTPlayerStateBase>();
+	check(STTPlayerState)
+	return STTPlayerState->GetPlayerLevel();
 }
 
 ASTTPlayerCharacter::ASTTPlayerCharacter()
@@ -175,6 +184,15 @@ void ASTTPlayerCharacter::OnRep_PlayerState()
 	
 	//Init ActorInfo for the Client
 	InitAbilitySystemComponent();
+
+	if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		AHUD* HUD = PlayerController->GetHUD();
+		if(ACharacterOpenWorldHUD* OpenWorldHUD = Cast<ACharacterOpenWorldHUD>(HUD))
+		{
+			OpenWorldHUD->SetOverlayOpenWorldWidgetFromHUD();
+		}
+	}
 }
 
 void ASTTPlayerCharacter::UseNormalAttack(const FInputActionValue& Value)
@@ -322,10 +340,13 @@ void ASTTPlayerCharacter::InitAbilitySystemComponent()
 	checkf(STTPlayerState, TEXT("STTPlayerState is nullptr"))
 
 	GetAbilitySystemComponent()->InitAbilityActorInfo(STTPlayerState, this);
-	ApplyDefaultAttributes();
-
 	GetAbilitySystemComponent()->AbilityCommittedCallbacks.Remove(OnCommitAbilityHandle);
 	OnCommitAbilityHandle = GetAbilitySystemComponent()->AbilityCommittedCallbacks.AddUObject(this, &ASTTPlayerCharacter::OnAbilityCommited);
+
+	AbilitySystemComponent = STTPlayerState->GetAbilitySystemComponent();
+	AttributeSet = STTPlayerState->GetAttributeSet();
+
+	ApplyDefaultAttributes();
 }
 
 

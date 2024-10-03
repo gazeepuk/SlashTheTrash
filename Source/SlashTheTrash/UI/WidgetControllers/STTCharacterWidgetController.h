@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/UltimateSkillAbilities/STTUltimateSkillAbilityBase.h"
+#include "Characters/STTPlayerCharacter.h"
+#include "Data/CharacterAbilitiesDataAsset.h"
+#include "Data/CharacterDataAsset.h"
 #include "UI/WidgetControllers/WidgetControllerBase.h"
 #include "STTCharacterWidgetController.generated.h"
 
@@ -13,25 +16,47 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpecialAbilityCommited, UGameplayAb
 
 class USTTSkillAbilityBase;
 class USTTAttackAbilityBase;
-class ASTTCharacterBase;
 /**
  * 
  */
+
+UCLASS(BlueprintType)
+class UCharacterWidgetControllerParams : public UWidgetControllerParams
+{
+	GENERATED_BODY()
+
+public:
+	virtual void InitParams(UAbilitySystemComponent* InASC, UAttributeSet* InAS, APlayerController* InPC, APlayerState* InPS) override
+	{
+		Super::InitParams(InASC, InAS, InPC, InPS);
+		AActor* AvatarActor = AbilitySystemComponent->GetAvatarActor();
+		ASTTPlayerCharacter* PlayerCharacter = Cast<ASTTPlayerCharacter>(AvatarActor);
+		if(PlayerCharacter)
+		{
+			SkillAbilityClass = PlayerCharacter->CharacterDataAsset->CharacterAbilitiesDataAsset->GetSkillAbilityClass();
+			UltimateAbilityClass = PlayerCharacter->CharacterDataAsset->CharacterAbilitiesDataAsset->GetUltimateSkillAbilityClass();
+		}
+	}
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<USTTSkillAbilityBase> SkillAbilityClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<USTTUltimateSkillAbilityBase> UltimateAbilityClass;
+};
+
 UCLASS(Blueprintable, BlueprintType)
 class SLASHTHETRASH_API USTTCharacterWidgetController : public UWidgetControllerBase
 {
 	GENERATED_BODY()
 
 public:
+
+	virtual void BindCallbacksToDependencies() override;
+	virtual void SetWidgetControllerParams(UWidgetControllerParams* InParameters) override;
+	
 	//Get STTCharacter from AbilitySystemComponent AvatarActor
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ASTTCharacterBase* GetSTTCharacter() const;
-
-	//Get abilities from STTCharacter
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TSubclassOf<USTTUltimateSkillAbilityBase> GetUltiamteAbilityClass();
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TSubclassOf<USTTSkillAbilityBase> GetSkillAbilityClass();
+	
 
 	//Get FAbilityUIInfo struct by ability class
 	UFUNCTION(BlueprintCallable,BlueprintType)
@@ -45,13 +70,17 @@ public:
 	UPROPERTY(BlueprintReadWrite,BlueprintAssignable)
 	FSpecialAbilityCommited OnSpecialAbilityCommited;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSubclassOf<UGameplayAbility> SpecialAbilityClass;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USTTAttackAbilityBase> SkillAbilityClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USTTAttackAbilityBase> UltimateAbilityClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USTTAttackAbilityBase> SpecialAbilityClass;
+
 protected:
 	//Broadcast delegates
-	virtual void AbilityCommited(UGameplayAbility* GameplayAbility) override;
-	virtual void SkillAbilityCommited(UGameplayAbility* GameplayAbility);
-	virtual void UltimateAbilityCommited(UGameplayAbility* GameplayAbility);
-	virtual void SpecialAbilityCommited(UGameplayAbility* GameplayAbility);
+	virtual void AbilityCommitted(UGameplayAbility* GameplayAbility) override;
+	virtual void SkillAbilityCommitted(UGameplayAbility* GameplayAbility);
+	virtual void UltimateAbilityCommitted(UGameplayAbility* GameplayAbility);
+	virtual void SpecialAbilityCommitted(UGameplayAbility* GameplayAbility);
 };

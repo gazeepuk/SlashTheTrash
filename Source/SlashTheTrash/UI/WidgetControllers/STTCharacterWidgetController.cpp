@@ -5,9 +5,24 @@
 
 #include "AbilitySystem/Abilities/SkillAbilities/STTSkillAbilityBase.h"
 #include "Characters/STTCharacterBase.h"
-#include "Data/CharacterDataAsset.h"
-#include "Data/CharacterAbilitiesDataAsset.h"
 
+
+void USTTCharacterWidgetController::BindCallbacksToDependencies()
+{
+	AbilitySystemComponent->AbilityCommittedCallbacks.AddUObject(this, &USTTCharacterWidgetController::AbilityCommitted);	
+}
+
+void USTTCharacterWidgetController::SetWidgetControllerParams(UWidgetControllerParams* InParameters)
+{
+	Super::SetWidgetControllerParams(InParameters);
+	
+	const UCharacterWidgetControllerParams* CharacterWidgetControllerParams = Cast<UCharacterWidgetControllerParams>(InParameters);
+	if(CharacterWidgetControllerParams)
+	{
+		SkillAbilityClass = CharacterWidgetControllerParams->SkillAbilityClass;
+		UltimateAbilityClass = CharacterWidgetControllerParams->UltimateAbilityClass;
+	}
+}
 
 ASTTCharacterBase* USTTCharacterWidgetController::GetSTTCharacter() const
 {
@@ -19,71 +34,48 @@ ASTTCharacterBase* USTTCharacterWidgetController::GetSTTCharacter() const
 	return nullptr;
 }
 
-TSubclassOf<USTTUltimateSkillAbilityBase> USTTCharacterWidgetController::GetUltiamteAbilityClass()
-{
-	ASTTCharacterBase* STTCharacter = GetSTTCharacter();
-	if(STTCharacter)
-	{
-		if(STTCharacter->CharacterDataAsset && STTCharacter->CharacterDataAsset->CharacterAbilitiesDataAsset)
-		{
-			return STTCharacter->CharacterDataAsset->CharacterAbilitiesDataAsset->GetUltimateSkillAbilityClass();
-		}
-	}
-	return nullptr;
-}
 
-TSubclassOf<USTTSkillAbilityBase> USTTCharacterWidgetController::GetSkillAbilityClass()
-{
-	ASTTCharacterBase* STTCharacter = GetSTTCharacter();
-	if(STTCharacter)
-	{
-		if(STTCharacter->CharacterDataAsset && STTCharacter->CharacterDataAsset->CharacterAbilitiesDataAsset)
-		{
-			return STTCharacter->CharacterDataAsset->CharacterAbilitiesDataAsset->GetSkillAbilityClass();
-		}
-	}
-	return nullptr;
-}
 
 FAbilityUIInfo USTTCharacterWidgetController::GetAbilityUIInfoByClass(TSubclassOf<USTTAttackAbilityBase> AttackAbilityClass)
 {
-	return AttackAbilityClass.GetDefaultObject()->GetAbilityUIInfo();
+	if(AttackAbilityClass)
+	{
+		return AttackAbilityClass.GetDefaultObject()->GetAbilityUIInfo();
+	}
+	return FAbilityUIInfo();
 }
 
-void USTTCharacterWidgetController::AbilityCommited(UGameplayAbility* GameplayAbility)
+void USTTCharacterWidgetController::AbilityCommitted(UGameplayAbility* GameplayAbility)
 {
 	if(GameplayAbility)
 	{
 		OnGameplayAbilityCommited.Broadcast(GameplayAbility);
-		if(GetUltiamteAbilityClass() && GameplayAbility->IsA(GetUltiamteAbilityClass()))
+		if(UltimateAbilityClass && GameplayAbility->IsA(UltimateAbilityClass))
 		{
-			UltimateAbilityCommited(GameplayAbility);
+			UltimateAbilityCommitted(GameplayAbility);
 		}
-		if(GetSkillAbilityClass() && GameplayAbility->IsA(GetSkillAbilityClass()))
+		if(SkillAbilityClass && GameplayAbility->IsA(SkillAbilityClass))
 		{
-			SkillAbilityCommited(GameplayAbility);
+			SkillAbilityCommitted(GameplayAbility);
 		}
 		if(SpecialAbilityClass && GameplayAbility->IsA(SpecialAbilityClass))
 		{
-			SpecialAbilityCommited(GameplayAbility);
+			SpecialAbilityCommitted(GameplayAbility);
 		}
 	}
 }
 
-void USTTCharacterWidgetController::SkillAbilityCommited(UGameplayAbility* GameplayAbility)
+void USTTCharacterWidgetController::SkillAbilityCommitted(UGameplayAbility* GameplayAbility)
 {
 	OnSkillAbilityCommited.Broadcast(GameplayAbility);
 }
 
-void USTTCharacterWidgetController::UltimateAbilityCommited(UGameplayAbility* GameplayAbility)
+void USTTCharacterWidgetController::UltimateAbilityCommitted(UGameplayAbility* GameplayAbility)
 {
 	OnUltimateAbilityCommited.Broadcast(GameplayAbility);
 }
 
-void USTTCharacterWidgetController::SpecialAbilityCommited(UGameplayAbility* GameplayAbility)
+void USTTCharacterWidgetController::SpecialAbilityCommitted(UGameplayAbility* GameplayAbility)
 {
-	if(GameplayAbility && SpecialAbilityClass && GameplayAbility->IsA(SpecialAbilityClass))
-	{
-		OnSpecialAbilityCommited.Broadcast(GameplayAbility);
-	}
+	OnSpecialAbilityCommited.Broadcast(GameplayAbility);
 }
