@@ -14,7 +14,6 @@
 #include "Data/CharacterAbilitiesDataAsset.h"
 #include "Data/CharacterDataAsset.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "PlayerStates/STTPlayerStateBase.h"
 #include "UI/HUD/CharacterOpenWorldHUD.h"
 
@@ -67,6 +66,14 @@ void ASTTPlayerCharacter::BeginPlay()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+		if(HasAuthority())
+		{
+			ACharacterOpenWorldHUD* HUD = PlayerController->GetHUD<ACharacterOpenWorldHUD>();
+			if(HUD)
+			{
+				HUD->SetOverlayOpenWorldWidgetFromHUD();
+			}
 		}
 	}
 	
