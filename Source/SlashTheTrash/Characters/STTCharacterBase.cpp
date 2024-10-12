@@ -11,8 +11,6 @@
 #include "Data/CharacterAbilitiesDataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "UI/WidgetControllers/HealthBarWidgetController.h"
-#include "UI/WidgetControllers/WidgetControllerBase.h"
 #include "UI/Widgets/STTUserWidgetBase.h"
 #include "UI/Widgets/OpenWorld/HealthBarOpenWorld.h"
 
@@ -67,7 +65,7 @@ void ASTTCharacterBase::InitHealthBarWidget()
 	}
 }
 
-void ASTTCharacterBase::OnHealthChanged(const FOnAttributeChangeData& Data)
+void ASTTCharacterBase::OnHealthChanged(const FOnAttributeChangeData& Data) const
 {
 	const USTTCharacterAttributeSet* CharacterAttributeSet = GetAttributeSet() ? Cast<USTTCharacterAttributeSet>(GetAttributeSet()) : nullptr;
 	if(HealthBarWidget && CharacterAttributeSet)

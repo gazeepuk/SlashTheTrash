@@ -84,5 +84,5 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UHealthBarOpenWorld> HealthBarWidget;
 	void InitHealthBarWidget();
-	void OnHealthChanged(const FOnAttributeChangeData& Data);
+	void OnHealthChanged(const FOnAttributeChangeData& Data) const;
 };
