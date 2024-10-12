@@ -9,7 +9,6 @@ void UOverlayOpenWorldWidgetController::BroadcastInitValues()
 {
 	USTTCharacterAttributeSet* STTAttributeSet = GetSTTAttributeSet();
 
-
 	//Broadcast health attributes
 	OnMaxHealthChangedDelegate.Broadcast(STTAttributeSet->GetMaxHealth(), STTAttributeSet->GetMaxHealth());
 	OnHealthChangedDelegate.Broadcast(STTAttributeSet->GetHealth(), STTAttributeSet->GetHealth());

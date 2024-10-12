@@ -8,6 +8,7 @@
 #include "Characters/STTCharacterBase.h"
 #include "STTPlayerCharacter.generated.h"
 
+class UHealthBarWidgetController;
 class USTTAttackAbilityBase;
 /**
  * 
@@ -21,7 +22,6 @@ public:
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const override;
-
 	// CombatInterface
 	virtual int32 GetPlayerLevel() override;
 

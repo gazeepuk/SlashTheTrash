@@ -9,6 +9,10 @@
 #include "Interfaces/DamageableInterface.h"
 #include "STTCharacterBase.generated.h"
 
+struct FOnAttributeChangeData;
+class UHealthBarOpenWorld;
+class USTTUserWidgetBase;
+class UWidgetComponent;
 class USTTUltimateSkillAbilityBase;
 class USTTSkillAbilityBase;
 class UAttributeSet;
@@ -32,7 +36,7 @@ public:
 	// Sets default values for this character's properties
 	ASTTCharacterBase();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	//~IAbilitySystemInterface interface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const;
@@ -41,10 +45,6 @@ public:
 	const TObjectPtr<UCharacterDataAsset> CharacterDataAsset;
 
 protected:
-
-	//~ACharacter interface
-	//Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 	
 	//~Ability System
 	UPROPERTY(Replicated)
@@ -66,7 +66,7 @@ protected:
 	void ApplyDefaultAttributes();
 	//Applies primary attributes
 	UFUNCTION(BlueprintCallable)
-	void ApplyPriamryAttributes();
+	void ApplyPrimaryAttributes();
 	//Applies Secondary attributes
 	UFUNCTION(BlueprintCallable)
 	void ApplySecondaryAttributes();
@@ -76,4 +76,13 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void InitAbilitySystemComponent() {}
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated)
+	TObjectPtr<UWidgetComponent> WidgetComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<USTTUserWidgetBase> HealthBarWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UHealthBarOpenWorld> HealthBarWidget;
+	void InitHealthBarWidget();
+	void OnHealthChanged(const FOnAttributeChangeData& Data);
 };

@@ -38,6 +38,7 @@ UAttributeSet* ASTTPlayerCharacter::GetAttributeSet() const
 	return STTPlayerState ? STTPlayerState->GetAttributeSet() : nullptr;
 }
 
+
 int32 ASTTPlayerCharacter::GetPlayerLevel()
 {
 	ASTTPlayerStateBase* STTPlayerState = GetPlayerState<ASTTPlayerStateBase>();
@@ -67,16 +68,7 @@ void ASTTPlayerCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
-		if(HasAuthority())
-		{
-			ACharacterOpenWorldHUD* HUD = PlayerController->GetHUD<ACharacterOpenWorldHUD>();
-			if(HUD)
-			{
-				HUD->SetOverlayOpenWorldWidgetFromHUD();
-			}
-		}
 	}
-	
 }
 
 // Called to bind functionality to input
@@ -183,6 +175,15 @@ void ASTTPlayerCharacter::PossessedBy(AController* NewController)
 	//Init ActorInfo for the Server
 	InitAbilitySystemComponent();
 	GiveDefaultAbilities();
+	if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		AHUD* HUD = PlayerController->GetHUD();
+		if(ACharacterOpenWorldHUD* OpenWorldHUD = Cast<ACharacterOpenWorldHUD>(HUD))
+		{
+			OpenWorldHUD->SetOverlayOpenWorldWidgetFromHUD();
+		}
+	}
+	InitHealthBarWidget();
 }
 
 void ASTTPlayerCharacter::OnRep_PlayerState()
@@ -200,6 +201,9 @@ void ASTTPlayerCharacter::OnRep_PlayerState()
 			OpenWorldHUD->SetOverlayOpenWorldWidgetFromHUD();
 		}
 	}
+
+	InitHealthBarWidget();
+	
 }
 
 void ASTTPlayerCharacter::UseNormalAttack(const FInputActionValue& Value)
@@ -354,6 +358,8 @@ void ASTTPlayerCharacter::InitAbilitySystemComponent()
 	AttributeSet = STTPlayerState->GetAttributeSet();
 
 	ApplyDefaultAttributes();
+
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(USTTCharacterAttributeSet::GetHealthAttribute()).AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 

@@ -6,10 +6,15 @@
 #include "AbilitySystem/STTAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/STTGameplayAbilityBase.h"
 #include "AbilitySystem/AttributeSet/STTCharacterAttributeSet.h"
+#include "Components/WidgetComponent.h"
 #include "Data/CharacterDataAsset.h"
 #include "Data/CharacterAbilitiesDataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/WidgetControllers/HealthBarWidgetController.h"
+#include "UI/WidgetControllers/WidgetControllerBase.h"
+#include "UI/Widgets/STTUserWidgetBase.h"
+#include "UI/Widgets/OpenWorld/HealthBarOpenWorld.h"
 
 
 // Sets default values
@@ -36,7 +41,9 @@ ASTTCharacterBase::ASTTCharacterBase()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	
+	// Create HealthBar widget 
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
+	WidgetComponent->SetupAttachment(GetRootComponent());
 }
 
 void ASTTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -44,24 +51,39 @@ void ASTTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ASTTCharacterBase, AbilitySystemComponent);
 	DOREPLIFETIME(ASTTCharacterBase, AttributeSet);
+	DOREPLIFETIME(ASTTCharacterBase, WidgetComponent);
 }
 
 
-// Called when the game starts or when spawned
-void ASTTCharacterBase::BeginPlay()
+void ASTTCharacterBase::InitHealthBarWidget()
 {
-	Super::BeginPlay();
+	WidgetComponent->SetWidgetClass(HealthBarWidgetClass);
+	WidgetComponent->InitWidget();
+	UUserWidget* Widget = WidgetComponent->GetWidget();
+	HealthBarWidget = Widget ? Cast<UHealthBarOpenWorld>(Widget) : nullptr;
+	if(HealthBarWidget)
+	{
+		OnHealthChanged(FOnAttributeChangeData());
+	}
+}
 
+void ASTTCharacterBase::OnHealthChanged(const FOnAttributeChangeData& Data)
+{
+	const USTTCharacterAttributeSet* CharacterAttributeSet = GetAttributeSet() ? Cast<USTTCharacterAttributeSet>(GetAttributeSet()) : nullptr;
+	if(HealthBarWidget && CharacterAttributeSet)
+	{
+		HealthBarWidget->UpdateHealthBar(CharacterAttributeSet->GetHealth(), CharacterAttributeSet->GetMaxHealth());
+	}
 }
 
 
 void ASTTCharacterBase::ApplyDefaultAttributes()
 {
-	ApplyPriamryAttributes();
+	ApplyPrimaryAttributes();
 	ApplySecondaryAttributes();
 }
 
-void ASTTCharacterBase::ApplyPriamryAttributes()
+void ASTTCharacterBase::ApplyPrimaryAttributes()
 {
 	check(GetAbilitySystemComponent());
 	check(CharacterDataAsset);
