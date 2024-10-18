@@ -23,4 +23,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	TArray<AActor*> TraceDamageableActors();
+
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
 };

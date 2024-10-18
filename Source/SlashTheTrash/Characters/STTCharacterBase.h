@@ -9,6 +9,9 @@
 #include "Interfaces/DamageableInterface.h"
 #include "STTCharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDiedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGetDamageDelegate, float, DamageValue);
+
 struct FOnAttributeChangeData;
 class UHealthBarOpenWorld;
 class USTTUserWidgetBase;
@@ -56,7 +59,15 @@ public:
 	//~IDamageableInterface
 	virtual void GetDamage_Implementation(FGameplayEffectSpec& DamageEffect) override;
 
+	// Applies GameplayEffect to self by class and level
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level) const;
+
+	// bAlive Getter
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsAlive() const;
+	// bAlive Setter
+	void SetIsAlive(const bool bNewAlive);
+	
 protected:
 	//Setup Default abilities and attributes
 	//Gives default abilities
@@ -73,10 +84,12 @@ protected:
 	
 	//AbilityCommit delegate handle 
 	FDelegateHandle OnCommitAbilityHandle;
-	
+
+	//Initialize ability system component
 	UFUNCTION(BlueprintCallable)
 	virtual void InitAbilitySystemComponent() {}
 
+	//HealthBar
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated)
 	TObjectPtr<UWidgetComponent> WidgetComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -84,5 +97,20 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UHealthBarOpenWorld> HealthBarWidget;
 	void InitHealthBarWidget();
-	void OnHealthChanged(const FOnAttributeChangeData& Data) const;
+
+	//Invokes on any health and max health changes
+	void OnHealthChanged(const FOnAttributeChangeData& Data);
+	//Invokes when get damage
+	virtual void OnGetDamage(float DamageValue);
+	//Invokes on death
+	virtual void OnDied();
+
+	//Health delegates
+	UPROPERTY(BlueprintAssignable)
+	FOnGetDamageDelegate GetDamageDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FOnDiedDelegate DiedDelegate;
+
+	//Is character alive
+	bool bAlive = true;
 };

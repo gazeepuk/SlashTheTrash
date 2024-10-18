@@ -13,5 +13,18 @@ UCLASS()
 class SLASHTHETRASH_API UCharacterAnimationsDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly)
+	const TObjectPtr<UAnimSequenceBase> IdleAnimation;
+
+	UPROPERTY(EditDefaultsOnly)
+	const TObjectPtr<UAnimMontage> DeathAnimation;
+
+	UPROPERTY(EditDefaultsOnly)
+	const TObjectPtr<UAnimMontage> GetDamageAnimation;
 	
+	UPROPERTY(EditDefaultsOnly)
+	const TObjectPtr<UBlendSpace> MovementBlendSpace;
+
 };

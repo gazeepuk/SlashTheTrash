@@ -63,14 +63,59 @@ void ASTTCharacterBase::InitHealthBarWidget()
 	{
 		OnHealthChanged(FOnAttributeChangeData());
 	}
+	if(IsLocallyControlled())
+	{
+		WidgetComponent->SetVisibility(false);
+	}
 }
 
-void ASTTCharacterBase::OnHealthChanged(const FOnAttributeChangeData& Data) const
+void ASTTCharacterBase::OnHealthChanged(const FOnAttributeChangeData& Data)
 {
 	const USTTCharacterAttributeSet* CharacterAttributeSet = GetAttributeSet() ? Cast<USTTCharacterAttributeSet>(GetAttributeSet()) : nullptr;
 	if(HealthBarWidget && CharacterAttributeSet)
 	{
 		HealthBarWidget->UpdateHealthBar(CharacterAttributeSet->GetHealth(), CharacterAttributeSet->GetMaxHealth());
+	}
+	if(FMath::IsNearlyZero(CharacterAttributeSet->GetHealth()))
+	{
+		OnDied();
+	}
+	if(Data.NewValue < Data.OldValue)
+	{
+		OnGetDamage(Data.OldValue - Data.NewValue);
+	}
+}
+
+void ASTTCharacterBase::OnGetDamage(const float DamageValue)
+{
+	GetDamageDelegate.Broadcast(DamageValue);
+}
+
+void ASTTCharacterBase::OnDied()
+{
+	DiedDelegate.Broadcast();
+	bAlive = false;
+	GetMovementComponent()->Deactivate();
+}
+
+bool ASTTCharacterBase::IsAlive() const
+{
+	return bAlive;
+}
+
+void ASTTCharacterBase::SetIsAlive(const bool bNewAlive)
+{
+	if(bAlive != bNewAlive)
+	{
+		bAlive = bNewAlive;
+		if(!bAlive)
+		{
+			OnDied();
+		}
+		else
+		{
+			GetMovementComponent()->Activate();
+		}
 	}
 }
 
