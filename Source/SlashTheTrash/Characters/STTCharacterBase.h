@@ -68,6 +68,9 @@ public:
 	// bAlive Setter
 	void SetIsAlive(const bool bNewAlive);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetWeaponVisibility(const bool bVisible);
+	
 protected:
 	//Setup Default abilities and attributes
 	//Gives default abilities
